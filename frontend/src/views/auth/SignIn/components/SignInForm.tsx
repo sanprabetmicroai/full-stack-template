@@ -36,7 +36,7 @@ const SignInForm = (props: SignInFormProps) => {
     const [isSubmitting, setSubmitting] = useState<boolean>(false)
     const [otpSent, setOtpSent] = useState<boolean>(false)
 
-    const { disableSubmit = false, className, setMessage, passwordHint } = props
+    const { disableSubmit = false, className, setMessage } = props
 
     const {
         handleSubmit,
@@ -52,7 +52,6 @@ const SignInForm = (props: SignInFormProps) => {
     })
 
     const { signIn, verifyOTP } = useAuth()
-    const phoneNumber = watch('phoneNumber')
 
     const onSubmit = (data: SignInFormSchema) => {
         console.log('Form submitted with data:', data)

@@ -15,6 +15,17 @@ import type {
 import type { ReactNode, Ref } from 'react'
 import type { NavigateFunction } from 'react-router'
 
+interface ApiErrorResponse {
+    message?: string
+    status?: number
+    data?: unknown
+}
+
+interface ApiError {
+    response?: ApiErrorResponse
+    toString(): string
+}
+
 type AuthProviderProps = { children: ReactNode }
 
 export type IsolatedNavigatorRef = {
@@ -93,16 +104,17 @@ function AuthProvider({ children }: AuthProviderProps) {
                 status: 'failed',
                 message: 'Unable to send OTP',
             }
-        } catch (errors: any) {
+        } catch (errors: unknown) {
+            const apiError = errors as ApiError
             console.error('AuthProvider: Sign in error:', {
-                message: errors?.response?.data?.message,
-                status: errors?.response?.status,
-                data: errors?.response?.data,
-                error: errors,
+                message: apiError?.response?.message,
+                status: apiError?.response?.status,
+                data: apiError?.response?.data,
+                error: apiError,
             })
             return {
                 status: 'failed',
-                message: errors?.response?.data?.message || errors.toString(),
+                message: apiError?.response?.message || apiError.toString(),
             }
         }
     }
@@ -136,16 +148,17 @@ function AuthProvider({ children }: AuthProviderProps) {
                 status: 'failed',
                 message: 'Unable to verify OTP',
             }
-        } catch (errors: any) {
+        } catch (errors: unknown) {
+            const apiError = errors as ApiError
             console.error('AuthProvider: OTP verification error:', {
-                message: errors?.response?.data?.message,
-                status: errors?.response?.status,
-                data: errors?.response?.data,
-                error: errors,
+                message: apiError?.response?.message,
+                status: apiError?.response?.status,
+                data: apiError?.response?.data,
+                error: apiError,
             })
             return {
                 status: 'failed',
-                message: errors?.response?.data?.message || errors.toString(),
+                message: apiError?.response?.message || apiError.toString(),
             }
         }
     }
@@ -159,6 +172,10 @@ function AuthProvider({ children }: AuthProviderProps) {
         }
     }
 
+    const updateUser = async (userData: Partial<User>) => {
+        setUser({ ...user, ...userData })
+    }
+
     return (
         <AuthContext.Provider
             value={{
@@ -167,6 +184,7 @@ function AuthProvider({ children }: AuthProviderProps) {
                 signIn,
                 verifyOTP,
                 signOut,
+                updateUser,
             }}
         >
             {children}

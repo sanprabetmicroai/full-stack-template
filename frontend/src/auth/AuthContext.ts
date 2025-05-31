@@ -12,6 +12,7 @@ type Auth = {
     signIn: (values: SignInCredential) => Promise<AuthResult>
     verifyOTP: (values: VerifyOTPCredential) => Promise<AuthResult>
     signOut: () => void
+    updateUser: (user: Partial<User>) => Promise<void>
 }
 
 const defaultFunctionPlaceHolder = async () => {
@@ -27,6 +28,7 @@ const AuthContext = createContext<Auth>({
     signIn: defaultFunctionPlaceHolder,
     verifyOTP: defaultFunctionPlaceHolder,
     signOut: () => {},
+    updateUser: async () => {},
 })
 
 export default AuthContext

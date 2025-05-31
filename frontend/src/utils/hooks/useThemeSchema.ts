@@ -21,7 +21,7 @@ export const mapTheme = (variables: ThemeVariables): MappedTheme => {
     }
 }
 
-function useThemeSchema() {
+const useThemeSchema = () => {
     const themeSchema = useThemeStore((state) => state.themeSchema)
     const mode = useThemeStore((state) => state.mode)
 

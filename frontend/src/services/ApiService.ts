@@ -11,7 +11,7 @@ const axiosInstance = axios.create({
 })
 
 const ApiService = {
-    fetchDataWithAxios<Response = unknown, Request = any>(
+    fetchDataWithAxios<Response = unknown, Request = unknown>(
         param: AxiosRequestConfig<Request>,
     ) {
         console.log('API Request:', {

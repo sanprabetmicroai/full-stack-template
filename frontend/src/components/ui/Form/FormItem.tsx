@@ -12,7 +12,7 @@ export interface FormItemProps extends CommonProps {
     extra?: string | ReactNode
     htmlFor?: string
     invalid?: boolean
-    label?: string
+    label?: string | ReactNode
     labelClass?: string
     labelWidth?: string | number
     layout?: TypeAttributes.FormLayout
@@ -73,7 +73,7 @@ const FormItem = (props: FormItemProps) => {
 
     const formLabelClass = classNames(
         'form-label',
-        label && getFormLabelLayoutClass(),
+        label ? getFormLabelLayoutClass() : undefined,
         labelClass,
     )
 

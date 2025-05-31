@@ -26,6 +26,11 @@ export interface VerifyOTPResponse {
 export interface User {
     phoneNumber: string;
     createdAt: string;
+    name?: string;
+    dateOfBirth?: string;
+    timeOfBirth?: string;
+    locationOfBirth?: string;
+    language?: string;
 }
 
 export interface Token {
