@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { db } = require('../config/firebase');
 const twilioClient = require('../config/twilio');
+const { v4: uuidv4 } = require('uuid');
 
 const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -42,15 +43,17 @@ const signIn = async (req, res) => {
         const timestamp = new Date();
         console.log('Generated OTP:', { otp, timestamp });
 
-        // Check if user exists
-        const userRef = db.collection('users').doc(phoneNumber);
-        const userDoc = await userRef.get();
-        console.log('User document exists:', userDoc.exists);
+        // Check if user exists by phone number
+        const usersRef = db.collection('users');
+        const userQuery = await usersRef.where('phoneNumber', '==', phoneNumber).get();
+        console.log('User query result:', userQuery.empty ? 'No user found' : 'User found');
 
-        if (!userDoc.exists) {
+        if (userQuery.empty) {
             console.log('Creating new user document');
-            // Create new user
-            await userRef.set({
+            // Create new user with UUID
+            const userId = uuidv4();
+            await usersRef.doc(userId).set({
+                id: userId,
                 phoneNumber,
                 createdAt: timestamp,
                 signInCount: 1,
@@ -58,8 +61,9 @@ const signIn = async (req, res) => {
             });
         } else {
             console.log('Updating existing user document');
+            const userDoc = userQuery.docs[0];
             // Update existing user's sign-in count and last sign-in time
-            await userRef.update({
+            await userDoc.ref.update({
                 signInCount: (userDoc.data().signInCount || 0) + 1,
                 lastSignIn: timestamp
             });
@@ -67,10 +71,13 @@ const signIn = async (req, res) => {
 
         // Save OTP with timestamp
         console.log('Saving OTP to Firestore');
+        const ttlTimestamp = new Date();
+        ttlTimestamp.setMinutes(ttlTimestamp.getMinutes() + 5); // 5 minutes TTL
+        
         await db.collection('otps').doc(phoneNumber).set({
             otp,
             timestamp,
-            verified: false
+            ttl: ttlTimestamp
         });
 
         // Send OTP via Twilio
@@ -139,19 +146,57 @@ const verifyOTP = async (req, res) => {
             return res.status(400).json({ error: 'Invalid OTP' });
         }
 
-        // Mark OTP as verified
-        await otpRef.update({ verified: true });
+        // Delete OTP document after successful verification
+        await otpRef.delete();
+        console.log('OTP document deleted after successful verification');
 
-        // Generate JWT token
+        // Get user data
+        const usersRef = db.collection('users');
+        const userQuery = await usersRef.where('phoneNumber', '==', phoneNumber).get();
+        const userDoc = userQuery.docs[0];
+        const userData = userDoc.data();
+
+        // Check if user profile is complete
+        const isProfileComplete = userData.firstName && 
+                                userData.lastName && 
+                                userData.email && 
+                                userData.phoneNumber;
+
+        if (!isProfileComplete) {
+            return res.status(200).json({
+                message: 'OTP verified successfully',
+                profileComplete: false,
+                user: {
+                    id: userData.id,
+                    phoneNumber: userData.phoneNumber,
+                    firstName: userData.firstName || '',
+                    lastName: userData.lastName || '',
+                    email: userData.email || ''
+                }
+            });
+        }
+
+        // Generate JWT token with user ID
         const token = jwt.sign(
-            { phoneNumber },
+            { 
+                userId: userData.id,
+                phoneNumber: userData.phoneNumber 
+            },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
 
         res.status(200).json({
             message: 'OTP verified successfully',
-            token
+            profileComplete: true,
+            token,
+            user: {
+                id: userData.id,
+                phoneNumber: userData.phoneNumber,
+                firstName: userData.firstName,
+                lastName: userData.lastName,
+                email: userData.email
+            }
         });
 
     } catch (error) {
@@ -178,8 +223,124 @@ const signOut = async (req, res) => {
     }
 };
 
+const signUp = async (req, res) => {
+    try {
+        const { firstName, lastName, email, phoneNumber, name } = req.body;
+        console.log('Received sign up request:', { firstName, lastName, email, phoneNumber, name });
+
+        if (!firstName || !lastName || !email || !phoneNumber) {
+            console.error('Missing required fields in sign up request');
+            return res.status(400).json({ error: 'First name, last name, email, and phone number are required' });
+        }
+
+        // Check if user already exists by phone number
+        const usersRef = db.collection('users');
+        const userQuery = await usersRef.where('phoneNumber', '==', phoneNumber).get();
+
+        if (!userQuery.empty) {
+            console.log('User already exists with phone number:', phoneNumber);
+            return res.status(400).json({ error: 'User already exists' });
+        }
+
+        // Create new user with UUID
+        const userId = uuidv4();
+        const timestamp = new Date();
+        
+        await usersRef.doc(userId).set({
+            id: userId,
+            firstName,
+            lastName,
+            name,
+            email,
+            phoneNumber,
+            createdAt: timestamp,
+            signInCount: 0,
+            lastSignIn: null
+        });
+
+        res.status(201).json({
+            message: 'User created successfully',
+            user: {
+                id: userId,
+                firstName,
+                lastName,
+                name,
+                email,
+                phoneNumber
+            }
+        });
+
+    } catch (error) {
+        console.error('Error in signUp:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+const completeProfile = async (req, res) => {
+    try {
+        const { id, firstName, lastName, email } = req.body;
+        console.log('Completing profile for user:', { id, firstName, lastName, email });
+
+        if (!id || !firstName || !lastName || !email) {
+            console.error('Missing required fields in profile completion request');
+            return res.status(400).json({ error: 'First name, last name, and email are required' });
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: 'Invalid email format' });
+        }
+
+        // Get user data
+        const userRef = db.collection('users').doc(id);
+        const userDoc = await userRef.get();
+
+        if (!userDoc.exists) {
+            console.error('User not found:', id);
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Update user profile
+        await userRef.update({
+            firstName,
+            lastName,
+            email,
+            updatedAt: new Date()
+        });
+
+        // Generate new JWT token
+        const token = jwt.sign(
+            { 
+                userId: id,
+                phoneNumber: userDoc.data().phoneNumber 
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        res.status(200).json({
+            message: 'Profile completed successfully',
+            token,
+            user: {
+                id,
+                firstName,
+                lastName,
+                email,
+                phoneNumber: userDoc.data().phoneNumber
+            }
+        });
+
+    } catch (error) {
+        console.error('Error in completeProfile:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
 module.exports = {
     signIn,
     verifyOTP,
-    signOut
+    signOut,
+    signUp,
+    completeProfile
 }; 

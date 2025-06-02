@@ -18,24 +18,24 @@ const ApiService = {
             url: param.url,
             method: param.method,
             data: param.data,
-            headers: param.headers
-        });
-        
+            headers: param.headers,
+        })
+
         return new Promise<Response>((resolve, reject) => {
             axiosInstance(param)
                 .then((response: AxiosResponse<Response>) => {
                     console.log('API Response:', {
                         status: response.status,
-                        data: response.data
-                    });
+                        data: response.data,
+                    })
                     resolve(response.data)
                 })
                 .catch((errors: AxiosError) => {
                     console.error('API Error:', {
                         message: errors.message,
                         response: errors.response?.data,
-                        status: errors.response?.status
-                    });
+                        status: errors.response?.status,
+                    })
                     reject(errors)
                 })
         })

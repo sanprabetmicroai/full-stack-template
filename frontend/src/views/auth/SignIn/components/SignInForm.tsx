@@ -15,7 +15,7 @@ import type { ReactNode } from 'react'
 interface SignInFormProps extends CommonProps {
     disableSubmit?: boolean
     passwordHint?: string | ReactNode
-    setMessage?: (message: string) => void
+    setMessage?: (message: string, isError?: boolean) => void
 }
 
 const validationSchema: ZodType<SignInFormSchema> = z.object({
@@ -79,10 +79,10 @@ const SignInForm = (props: SignInFormProps) => {
                 if (result?.status === 'success') {
                     console.log('OTP sent successfully')
                     setOtpSent(true)
-                    setMessage?.(result.message)
+                    setMessage?.(result.message, false)
                 } else {
                     console.error('Failed to send OTP:', result)
-                    setMessage?.(result.message)
+                    setMessage?.(result.message, true)
                 }
             } else {
                 console.log('Attempting to verify OTP for:', values.phoneNumber)
@@ -94,7 +94,7 @@ const SignInForm = (props: SignInFormProps) => {
 
                 if (result?.status === 'failed') {
                     console.error('OTP verification failed:', result)
-                    setMessage?.(result.message)
+                    setMessage?.(result.message, true)
                 }
             }
         }

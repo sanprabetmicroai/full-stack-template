@@ -1,18 +1,26 @@
-import { PropsWithChildren } from 'react'
-import { Navigate } from 'react-router'
-import useAuthority from '@/utils/hooks/useAuthority'
+import { Navigate } from 'react-router-dom'
+import type { ReactNode } from 'react'
 
-type AuthorityGuardProps = PropsWithChildren<{
-    userAuthority?: string[]
+interface AuthorityGuardProps {
+    userAuthority?: string
     authority?: string[]
-}>
+    children: ReactNode
+}
 
-const AuthorityGuard = (props: AuthorityGuardProps) => {
-    const { userAuthority = [], authority = [], children } = props
+const AuthorityGuard = ({
+    userAuthority,
+    authority,
+    children,
+}: AuthorityGuardProps) => {
+    if (!userAuthority || !authority) {
+        return <>{children}</>
+    }
 
-    const roleMatched = useAuthority(userAuthority, authority)
+    if (authority.includes(userAuthority)) {
+        return <>{children}</>
+    }
 
-    return <>{roleMatched ? children : <Navigate to="/access-denied" />}</>
+    return <Navigate to="/access-denied" replace />
 }
 
 export default AuthorityGuard

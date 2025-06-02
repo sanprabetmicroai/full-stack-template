@@ -1,34 +1,42 @@
 import { createContext } from 'react'
-import type {
-    SignInCredential,
-    VerifyOTPCredential,
-    AuthResult,
-    User,
-} from '@/@types/auth'
+import type { AuthResult, User } from '@/@types/auth'
 
-type Auth = {
+export interface Auth {
     authenticated: boolean
     user: User
-    signIn: (values: SignInCredential) => Promise<AuthResult>
-    verifyOTP: (values: VerifyOTPCredential) => Promise<AuthResult>
-    signOut: () => void
-    updateUser: (user: Partial<User>) => Promise<void>
+    signIn: (values: { phoneNumber: string }) => Promise<AuthResult>
+    verifyOTP: (values: {
+        phoneNumber: string
+        otp: string
+    }) => Promise<AuthResult>
+    signUp: (values: {
+        firstName: string
+        lastName: string
+        email: string
+        phoneNumber: string
+    }) => Promise<AuthResult>
+    signOut: () => Promise<void>
+    updateUser: (userData: Partial<User>) => void
+    completeProfile: (userData: Partial<User>) => Promise<AuthResult>
 }
 
-const defaultFunctionPlaceHolder = async () => {
-    return {
-        status: 'failed' as const,
-        message: 'Function not implemented',
-    }
-}
+const defaultFunctionPlaceHolder = async () => ({
+    status: 'failed' as const,
+    message: 'Not implemented',
+})
 
 const AuthContext = createContext<Auth>({
     authenticated: false,
-    user: { phoneNumber: '', createdAt: '' },
+    user: { id: '', phoneNumber: '', createdAt: '' },
     signIn: defaultFunctionPlaceHolder,
     verifyOTP: defaultFunctionPlaceHolder,
-    signOut: () => {},
-    updateUser: async () => {},
+    signUp: defaultFunctionPlaceHolder,
+    signOut: async () => {},
+    updateUser: () => {},
+    completeProfile: async () => ({
+        status: 'failed',
+        message: 'Not implemented',
+    }),
 })
 
 export default AuthContext

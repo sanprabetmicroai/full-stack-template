@@ -8,6 +8,7 @@ import appConfig from '@/configs/app.config'
 import { useAuth } from '@/auth'
 import { Routes, Route, Navigate } from 'react-router'
 import type { LayoutType } from '@/@types/theme'
+import type { Route as RouteType } from '@/@types/routes'
 
 interface ViewsProps {
     pageContainerType?: 'default' | 'gutterless' | 'contained'
@@ -28,7 +29,7 @@ const AllRoutes = (props: AllRoutesProps) => {
                     path="/"
                     element={<Navigate replace to={authenticatedEntryPath} />}
                 />
-                {protectedRoutes.map((route, index) => (
+                {protectedRoutes.map((route: RouteType, index: number) => (
                     <Route
                         key={route.key + index}
                         path={route.path}

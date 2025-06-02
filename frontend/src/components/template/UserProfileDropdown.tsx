@@ -5,6 +5,8 @@ import { useSessionUser } from '@/store/authStore'
 import { Link } from 'react-router'
 import { PiUserDuotone, PiSignOutDuotone } from 'react-icons/pi'
 import { useAuth } from '@/auth'
+import { useLocaleStore } from '@/store/localeStore'
+import { useTranslation } from 'react-i18next'
 import type { JSX } from 'react'
 
 type DropdownList = {
@@ -13,20 +15,32 @@ type DropdownList = {
     icon: JSX.Element
 }
 
+const languageList = [
+    { label: 'English', value: 'en', flag: 'US' },
+    { label: 'Español', value: 'es', flag: 'ES' },
+    { label: 'Português', value: 'pt', flag: 'PT' },
+]
+
 const dropdownItemList: DropdownList[] = []
 
 const _UserDropdown = () => {
-    const { avatar, userName, email } = useSessionUser((state) => state.user)
-
+    const { firstName, lastName, phoneNumber } = useSessionUser(
+        (state) => state.user,
+    )
     const { signOut } = useAuth()
+    const { currentLang: locale, setLang } = useLocaleStore((state) => state)
+    const { t } = useTranslation()
 
     const handleSignOut = () => {
         signOut()
     }
 
     const avatarProps = {
-        ...(avatar ? { src: avatar } : { icon: <PiUserDuotone /> }),
+        icon: <PiUserDuotone />,
     }
+
+    const displayName =
+        firstName && lastName ? `${firstName} ${lastName}` : 'Anonymous'
 
     return (
         <Dropdown
@@ -44,10 +58,10 @@ const _UserDropdown = () => {
                     <Avatar {...avatarProps} />
                     <div>
                         <div className="font-bold text-gray-900 dark:text-gray-100">
-                            {userName || 'Anonymous'}
+                            {displayName}
                         </div>
                         <div className="text-xs">
-                            {email || 'No email available'}
+                            {phoneNumber || 'No phone number available'}
                         </div>
                     </div>
                 </div>
@@ -67,6 +81,33 @@ const _UserDropdown = () => {
                     </Link>
                 </Dropdown.Item>
             ))}
+            <Dropdown.Item variant="divider" />
+            <Dropdown.Item variant="header">
+                <span className="text-sm font-semibold">
+                    {t('common.language')}
+                </span>
+            </Dropdown.Item>
+            {languageList.map((lang) => (
+                <Dropdown.Item
+                    key={lang.label}
+                    className="justify-between px-2"
+                    eventKey={lang.label}
+                    onClick={() => setLang(lang.value)}
+                >
+                    <span className="flex items-center">
+                        <Avatar
+                            size={18}
+                            shape="circle"
+                            src={`/img/countries/${lang.flag}.png`}
+                        />
+                        <span className="ltr:ml-2 rtl:mr-2">{lang.label}</span>
+                    </span>
+                    {locale === lang.value && (
+                        <span className="text-emerald-500 text-lg">✓</span>
+                    )}
+                </Dropdown.Item>
+            ))}
+            <Dropdown.Item variant="divider" />
             <Dropdown.Item
                 eventKey="Sign Out"
                 className="gap-2"
@@ -75,7 +116,7 @@ const _UserDropdown = () => {
                 <span className="text-xl">
                     <PiSignOutDuotone />
                 </span>
-                <span>Sign Out</span>
+                <span>{t('common.signOut')}</span>
             </Dropdown.Item>
         </Dropdown>
     )

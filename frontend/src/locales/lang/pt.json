@@ -1,0 +1,84 @@
+{
+    "nav": {
+        "home": "Início",
+        "singleMenuItem": "Item de menu único",
+        "collapseMenu": {
+            "collapseMenu": "Item de menu recolhível",
+            "item1": "Item de menu recolhível 1",
+            "item2": "Item de menu recolhível 2"
+        },
+        "groupMenu": {
+            "groupMenu": "Menu de grupo",
+            "single": "Item de menu único de grupo",
+            "collapse": {
+                "collapse": "Menu recolhível de grupo",
+                "item1": "Item de menu recolhível de grupo 1",
+                "item2": "Item de menu recolhível de grupo 2"
+            }
+        },
+        "profile": "Perfil",
+        "profile.dashboard": "Painel",
+        "profile.profile": "Perfil",
+        "profile.settings": "Configurações",
+        "profile.notifications": "Notificações"
+    },
+    "dashboard": {
+        "welcome": "Bem-vindo, {{name}}!",
+        "subtitle": "Aqui está um resumo da sua conta",
+        "profile": "Perfil",
+        "profileDesc": "Ver e editar informações do seu perfil",
+        "notifications": "Notificações",
+        "notificationsDesc": "Verifique suas notificações e atualizações",
+        "settings": "Configurações",
+        "settingsDesc": "Gerencie as configurações da sua conta",
+        "recentActivity": "Atividade Recente",
+        "noActivity": "Nenhuma atividade recente para mostrar"
+    },
+    "profile": {
+        "title": "Informações do Perfil",
+        "firstName": "Nome",
+        "lastName": "Sobrenome",
+        "email": "Email",
+        "phone": "Número de Telefone",
+        "theme_color": "Cor do Tema"
+    },
+    "settings": {
+        "title": "Configurações",
+        "subtitle": "Gerencie as configurações e preferências da sua conta",
+        "appearance": "Aparência",
+        "theme": "Tema",
+        "layout": "Layout",
+        "layouts": {
+            "collapsibleSide": "Barra Lateral Recolhível",
+            "stackedSide": "Barra Lateral Empilhada"
+        },
+        "notifications": "Notificações",
+        "notificationsDesc": "Gerencie suas preferências de notificações"
+    },
+    "notifications": {
+        "title": "Notificações",
+        "subtitle": "Mantenha-se atualizado com suas últimas notificações",
+        "welcome": {
+            "title": "Bem-vindo ao Kars!",
+            "message": "Obrigado por se juntar à nossa plataforma. Estamos animados em tê-lo aqui!"
+        },
+        "profile": {
+            "title": "Atualização de Perfil",
+            "message": "Seu perfil foi atualizado com sucesso"
+        }
+    },
+    "common": {
+        "edit": "Editar",
+        "save": "Salvar",
+        "cancel": "Cancelar",
+        "signOut": "Sair",
+        "language": "Idioma",
+        "upload": "Enviar",
+        "uploading": "Enviando..."
+    },
+    "theme": {
+        "default": "Padrão",
+        "dark": "Escuro",
+        "light": "Claro"
+    }
+}

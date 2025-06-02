@@ -1,40 +1,38 @@
-import { useState, useEffect } from 'react'
+import { Card } from '@/components/ui'
 import { useTranslation } from 'react-i18next'
-import PageContainer from '@/components/template/PageContainer'
-import { Card, Badge } from '@/components/ui'
+import { HiBell, HiCheck, HiX } from 'react-icons/hi'
+import { useState } from 'react'
 
-interface Notification {
+type Notification = {
     id: string
     title: string
     message: string
-    timestamp: Date
+    time: string
     read: boolean
 }
 
 const Notifications = () => {
     const { t } = useTranslation()
-    const [notifications, setNotifications] = useState<Notification[]>([])
-    const [loading, setLoading] = useState(true)
-
-    useEffect(() => {
-        // TODO: Implement real-time notifications using your backend
-        // This is a placeholder for demonstration
-        const mockNotifications: Notification[] = [
-            {
-                id: '1',
-                title: t('notifications.welcome'),
-                message: t('notifications.welcomeMessage'),
-                timestamp: new Date(),
-                read: false,
-            },
-        ]
-        setNotifications(mockNotifications)
-        setLoading(false)
-    }, [t])
+    const [notifications, setNotifications] = useState<Notification[]>([
+        {
+            id: '1',
+            title: t('notifications.welcome.title'),
+            message: t('notifications.welcome.message'),
+            time: '2 hours ago',
+            read: false,
+        },
+        {
+            id: '2',
+            title: t('notifications.profile.title'),
+            message: t('notifications.profile.message'),
+            time: '1 day ago',
+            read: true,
+        },
+    ])
 
     const markAsRead = (id: string) => {
-        setNotifications((prev) =>
-            prev.map((notification) =>
+        setNotifications(
+            notifications.map((notification) =>
                 notification.id === id
                     ? { ...notification, read: true }
                     : notification,
@@ -42,84 +40,89 @@ const Notifications = () => {
         )
     }
 
-    if (loading) {
-        return (
-            <PageContainer>
-                <div className="max-w-4xl mx-auto p-6">
-                    <div className="animate-pulse">
-                        <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-                        <div className="space-y-4">
-                            {[1, 2, 3].map((i) => (
-                                <div
-                                    key={i}
-                                    className="h-24 bg-gray-200 rounded"
-                                ></div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </PageContainer>
+    const deleteNotification = (id: string) => {
+        setNotifications(
+            notifications.filter((notification) => notification.id !== id),
         )
     }
 
-    return (
-        <PageContainer>
-            <div className="max-w-4xl mx-auto p-6">
-                <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold">
-                        {t('notifications.title')}
-                    </h1>
-                    <Badge
-                        content={notifications.filter((n) => !n.read).length}
-                    >
-                        {t('notifications.unread')}
-                    </Badge>
-                </div>
+    const unreadCount = notifications.filter((n) => !n.read).length
 
-                <div className="space-y-4">
-                    {notifications.length === 0 ? (
-                        <Card>
-                            <div className="p-6 text-center text-gray-500">
-                                {t('notifications.noNotifications')}
-                            </div>
-                        </Card>
-                    ) : (
-                        notifications.map((notification) => (
-                            <Card
+    return (
+        <div className="container mx-auto p-4">
+            <div className="mb-6">
+                <h1 className="text-2xl font-bold mb-2">
+                    {t('notifications.title')}
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400">
+                    {t('notifications.subtitle', { count: unreadCount })}
+                </p>
+            </div>
+
+            <Card>
+                {notifications.length === 0 ? (
+                    <div className="text-center py-8">
+                        <HiBell className="text-4xl mx-auto mb-4 text-gray-400" />
+                        <p className="text-gray-600 dark:text-gray-400">
+                            {t('notifications.empty')}
+                        </p>
+                    </div>
+                ) : (
+                    <div className="divide-y">
+                        {notifications.map((notification) => (
+                            <div
                                 key={notification.id}
-                                className={`cursor-pointer transition-colors ${
-                                    notification.read
-                                        ? 'bg-gray-50'
-                                        : 'bg-white'
+                                className={`p-4 ${
+                                    !notification.read
+                                        ? 'bg-gray-50 dark:bg-gray-800'
+                                        : ''
                                 }`}
-                                onClick={() => markAsRead(notification.id)}
                             >
-                                <div className="p-6">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="font-semibold mb-2">
-                                                {notification.title}
-                                            </h3>
-                                            <p className="text-gray-600">
-                                                {notification.message}
-                                            </p>
-                                        </div>
-                                        {!notification.read && (
-                                            <Badge content="New" />
-                                        )}
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h3 className="font-semibold">
+                                            {notification.title}
+                                        </h3>
+                                        <p className="text-gray-600 dark:text-gray-400 mt-1">
+                                            {notification.message}
+                                        </p>
+                                        <p className="text-sm text-gray-500 mt-2">
+                                            {notification.time}
+                                        </p>
                                     </div>
-                                    <div className="mt-4 text-sm text-gray-500">
-                                        {new Date(
-                                            notification.timestamp,
-                                        ).toLocaleString()}
+                                    <div className="flex gap-2">
+                                        {!notification.read && (
+                                            <button
+                                                onClick={() =>
+                                                    markAsRead(notification.id)
+                                                }
+                                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                                                title={t(
+                                                    'notifications.markAsRead',
+                                                )}
+                                            >
+                                                <HiCheck className="text-lg" />
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={() =>
+                                                deleteNotification(
+                                                    notification.id,
+                                                )
+                                            }
+                                            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                                            title={t('notifications.delete')}
+                                        >
+                                            <HiX className="text-lg" />
+                                        </button>
                                     </div>
                                 </div>
-                            </Card>
-                        ))
-                    )}
-                </div>
-            </div>
-        </PageContainer>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </Card>
+        </div>
     )
 }
 

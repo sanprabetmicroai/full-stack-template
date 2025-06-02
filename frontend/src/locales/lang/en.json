@@ -15,6 +15,70 @@
                 "item1": "Group collapse menu item 1",
                 "item2": "Group collapse menu item 2"
             }
+        },
+        "profile": "Profile",
+        "profile.dashboard": "Dashboard",
+        "profile.profile": "Profile",
+        "profile.settings": "Settings",
+        "profile.notifications": "Notifications"
+    },
+    "dashboard": {
+        "welcome": "Welcome, {{name}}!",
+        "subtitle": "Here's an overview of your account",
+        "profile": "Profile",
+        "profileDesc": "View and edit your profile information",
+        "notifications": "Notifications",
+        "notificationsDesc": "Check your notifications and updates",
+        "settings": "Settings",
+        "settingsDesc": "Manage your account settings",
+        "recentActivity": "Recent Activity",
+        "noActivity": "No recent activity to show"
+    },
+    "profile": {
+        "title": "Profile Information",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "email": "Email",
+        "phone": "Phone Number",
+        "theme_color": "Theme Color"
+    },
+    "settings": {
+        "title": "Settings",
+        "subtitle": "Manage your account settings and preferences",
+        "appearance": "Appearance",
+        "theme": "Theme",
+        "layout": "Layout",
+        "layouts": {
+            "collapsibleSide": "Collapsible Side",
+            "stackedSide": "Stacked Side"
+        },
+        "notifications": "Notifications",
+        "notificationsDesc": "Manage your notification preferences"
+    },
+    "notifications": {
+        "title": "Notifications",
+        "subtitle": "Stay updated with your latest notifications",
+        "welcome": {
+            "title": "Welcome to Kars!",
+            "message": "Thank you for joining our platform. We're excited to have you here!"
+        },
+        "profile": {
+            "title": "Profile Update",
+            "message": "Your profile has been successfully updated"
         }
+    },
+    "common": {
+        "edit": "Edit",
+        "save": "Save",
+        "cancel": "Cancel",
+        "signOut": "Sign Out",
+        "language": "Language",
+        "upload": "Upload",
+        "uploading": "Uploading..."
+    },
+    "theme": {
+        "default": "Default",
+        "dark": "Dark",
+        "light": "Light"
     }
 }

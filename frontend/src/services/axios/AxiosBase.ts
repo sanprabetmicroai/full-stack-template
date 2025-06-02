@@ -23,7 +23,7 @@ const AxiosBase = (config: AxiosRequestConfig) => {
         },
         (error) => {
             return Promise.reject(error)
-        }
+        },
     )
 
     // Add response interceptor for error handling
@@ -36,7 +36,7 @@ const AxiosBase = (config: AxiosRequestConfig) => {
                 window.location.href = '/sign-in'
             }
             return Promise.reject(error)
-        }
+        },
     )
 
     return axiosInstance(config)
