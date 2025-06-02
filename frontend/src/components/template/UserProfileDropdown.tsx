@@ -3,7 +3,13 @@ import Dropdown from '@/components/ui/Dropdown'
 import withHeaderItem from '@/utils/hoc/withHeaderItem'
 import { useSessionUser } from '@/store/authStore'
 import { Link } from 'react-router'
-import { PiUserDuotone, PiSignOutDuotone } from 'react-icons/pi'
+import {
+    PiUserDuotone,
+    PiSignOutDuotone,
+    PiGearDuotone,
+    PiBellDuotone,
+    PiLayoutDuotone,
+} from 'react-icons/pi'
 import { useAuth } from '@/auth'
 import { useLocaleStore } from '@/store/localeStore'
 import { useTranslation } from 'react-i18next'
@@ -21,10 +27,31 @@ const languageList = [
     { label: 'Português', value: 'pt', flag: 'PT' },
 ]
 
-const dropdownItemList: DropdownList[] = []
+const dropdownItemList: DropdownList[] = [
+    {
+        label: 'Dashboard',
+        path: '/dashboard',
+        icon: <PiLayoutDuotone />,
+    },
+    {
+        label: 'Profile',
+        path: '/profile',
+        icon: <PiUserDuotone />,
+    },
+    {
+        label: 'Settings',
+        path: '/settings',
+        icon: <PiGearDuotone />,
+    },
+    {
+        label: 'Notifications',
+        path: '/notifications',
+        icon: <PiBellDuotone />,
+    },
+]
 
 const _UserDropdown = () => {
-    const { firstName, lastName, phoneNumber } = useSessionUser(
+    const { firstName, lastName, phoneNumber, profileImage } = useSessionUser(
         (state) => state.user,
     )
     const { signOut } = useAuth()
@@ -37,6 +64,7 @@ const _UserDropdown = () => {
 
     const avatarProps = {
         icon: <PiUserDuotone />,
+        src: profileImage,
     }
 
     const displayName =
