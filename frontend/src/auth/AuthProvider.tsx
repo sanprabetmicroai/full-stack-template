@@ -1,16 +1,15 @@
-import { useRef, useImperativeHandle, useState } from 'react'
+import { useRef, useImperativeHandle, useState, forwardRef } from 'react'
 import AuthContext from './AuthContext'
 import appConfig from '@/configs/app.config'
 import { useSessionUser, useToken } from '@/store/authStore'
 import {
-    apiSignIn,
+    apiSendOTP,
     apiSignOut,
-    apiVerifyOTP,
-    apiSignUp,
-    apiCompleteProfile,
+    apiVerifySignIn,
+    apiVerifySignUp,
 } from '@/services/AuthService'
 import { REDIRECT_URL_KEY } from '@/constants/app.constant'
-import { useNavigate } from 'react-router'
+import { useNavigate } from 'react-router-dom'
 import type {
     SignInCredential,
     VerifyOTPCredential,
@@ -18,10 +17,9 @@ import type {
     User,
     Token,
     SignUpCredential,
-    SignInResponse,
 } from '@/@types/auth'
-import type { ReactNode, Ref } from 'react'
-import type { NavigateFunction } from 'react-router'
+import type { ReactNode } from 'react'
+import type { NavigateFunction } from 'react-router-dom'
 
 interface ApiErrorResponse {
     message?: string
@@ -44,7 +42,7 @@ export type IsolatedNavigatorRef = {
     navigate: NavigateFunction
 }
 
-const IsolatedNavigator = ({ ref }: { ref: Ref<IsolatedNavigatorRef> }) => {
+const IsolatedNavigator = forwardRef<IsolatedNavigatorRef>((_, ref) => {
     const navigate = useNavigate()
 
     useImperativeHandle(ref, () => {
@@ -54,7 +52,7 @@ const IsolatedNavigator = ({ ref }: { ref: Ref<IsolatedNavigatorRef> }) => {
     }, [navigate])
 
     return <></>
-}
+})
 
 function AuthProvider({ children }: AuthProviderProps) {
     const signedIn = useSessionUser((state) => state.signedIn)
@@ -100,129 +98,120 @@ function AuthProvider({ children }: AuthProviderProps) {
         setSessionSignedIn(false)
     }
 
-    const signIn = async (values: SignInCredential): Promise<AuthResult> => {
+    // Send OTP (for both sign-in and sign-up)
+    const sendOTP = async (values: SignInCredential): Promise<AuthResult> => {
         try {
-            console.log(
-                'AuthProvider: Initiating sign in request with:',
-                values,
-            )
-            const resp: SignInResponse = await apiSignIn(values)
-            console.log('AuthProvider: Sign in API response:', resp)
+            console.log('AuthProvider: Sending OTP to:', values.phoneNumber)
+            const resp = await apiSendOTP(values)
+            console.log('AuthProvider: Send OTP response:', resp)
 
-            if (resp) {
+            if (resp?.success) {
                 return {
                     status: 'success',
                     message: resp.message,
                 }
             }
-            console.error('AuthProvider: No response received from sign in API')
+
             return {
                 status: 'failed',
-                message: 'Unable to send OTP',
+                message: resp?.message || 'Failed to send verification code',
             }
         } catch (errors: unknown) {
             const apiError = errors as ApiError
-            console.error('AuthProvider: Sign in error:', {
-                message: apiError?.response?.message,
-                status: apiError?.response?.status,
-                data: apiError?.response?.data,
-                error: apiError,
-            })
+            console.error('AuthProvider: Send OTP error:', apiError)
+
+            const errorMessage =
+                apiError?.response?.data?.message ||
+                apiError?.response?.message ||
+                'Failed to send verification code'
+
             return {
                 status: 'failed',
-                message: apiError?.response?.message || apiError.toString(),
+                message: errorMessage,
             }
         }
     }
 
-    const verifyOTP = async (
+    // Verify OTP for existing users (sign-in)
+    const verifySignIn = async (
         values: VerifyOTPCredential,
     ): Promise<AuthResult> => {
         try {
             console.log(
-                'AuthProvider: Initiating OTP verification with:',
-                values,
+                'AuthProvider: Verifying sign-in OTP for:',
+                values.phoneNumber,
             )
-            const resp = await apiVerifyOTP(values)
-            console.log('AuthProvider: OTP verification API response:', resp)
+            const resp = await apiVerifySignIn(values)
+            console.log('AuthProvider: Verify sign-in response:', resp)
 
-            if (resp) {
-                console.log(
-                    'AuthProvider: OTP verification successful, handling sign in',
-                )
-                if (!resp.profileComplete) {
-                    return {
-                        status: 'incomplete_profile',
-                        message: 'Please complete your profile',
-                        user: resp.user,
-                    }
-                }
-                if (!resp.token) {
-                    return {
-                        status: 'failed',
-                        message: 'No token received',
-                    }
-                }
-                handleSignIn({ accessToken: resp.token }, resp.user)
+            if (resp?.success && resp.data?.token) {
+                handleSignIn({ accessToken: resp.data.token }, resp.data.user)
                 redirect()
                 return {
                     status: 'success',
                     message: resp.message,
                 }
             }
-            console.error(
-                'AuthProvider: No response received from OTP verification API',
-            )
+
             return {
                 status: 'failed',
-                message: 'Unable to verify OTP',
+                message: resp?.message || 'Failed to verify code',
             }
         } catch (errors: unknown) {
             const apiError = errors as ApiError
-            console.error('AuthProvider: OTP verification error:', {
-                message: apiError?.response?.message,
-                status: apiError?.response?.status,
-                data: apiError?.response?.data,
-                error: apiError,
-            })
+            console.error('AuthProvider: Verify sign-in error:', apiError)
+
+            const errorMessage =
+                apiError?.response?.data?.message ||
+                apiError?.response?.message ||
+                'Failed to verify code'
+
             return {
                 status: 'failed',
-                message: apiError?.response?.message || apiError.toString(),
+                message: errorMessage,
             }
         }
     }
 
-    const completeProfile = async (
-        userData: Partial<User>,
-    ): Promise<AuthResult> => {
+    // Verify OTP for new users (sign-up)
+    const verifySignUp = async (values: {
+        phoneNumber: string
+        otp: string
+        userData: SignUpCredential
+    }): Promise<AuthResult> => {
         try {
-            console.log('AuthProvider: Completing user profile:', userData)
-            const resp = await apiCompleteProfile(userData)
-            console.log('AuthProvider: Profile completion API response:', resp)
+            console.log(
+                'AuthProvider: Verifying sign-up OTP for:',
+                values.phoneNumber,
+            )
+            const resp = await apiVerifySignUp(values)
+            console.log('AuthProvider: Verify sign-up response:', resp)
 
-            if (resp) {
-                handleSignIn({ accessToken: resp.token }, resp.user)
+            if (resp?.success && resp.data?.token) {
+                handleSignIn({ accessToken: resp.data.token }, resp.data.user)
                 redirect()
                 return {
                     status: 'success',
                     message: resp.message,
                 }
             }
+
             return {
                 status: 'failed',
-                message: 'Unable to complete profile',
+                message: resp?.message || 'Failed to create account',
             }
         } catch (errors: unknown) {
             const apiError = errors as ApiError
-            console.error('AuthProvider: Profile completion error:', {
-                message: apiError?.response?.message,
-                status: apiError?.response?.status,
-                data: apiError?.response?.data,
-                error: apiError,
-            })
+            console.error('AuthProvider: Verify sign-up error:', apiError)
+
+            const errorMessage =
+                apiError?.response?.data?.message ||
+                apiError?.response?.message ||
+                'Failed to create account'
+
             return {
                 status: 'failed',
-                message: apiError?.response?.message || apiError.toString(),
+                message: errorMessage,
             }
         }
     }
@@ -240,74 +229,16 @@ function AuthProvider({ children }: AuthProviderProps) {
         setUser({ ...user, ...userData })
     }
 
-    const signUp = async (values: SignUpCredential): Promise<AuthResult> => {
-        try {
-            console.log(
-                'AuthProvider: Initiating sign up request with:',
-                values,
-            )
-            const resp = (await apiSignUp(values)) as unknown as {
-                message: string
-                user: User
-            }
-            console.log('AuthProvider: Sign up API response:', resp)
-
-            if (resp) {
-                return {
-                    status: 'sign_in_required',
-                    message:
-                        'Account created successfully! Please sign in to continue.',
-                }
-            }
-            console.error('AuthProvider: No response received from sign up API')
-            return {
-                status: 'failed',
-                message: 'Unable to create account',
-            }
-        } catch (errors: unknown) {
-            const apiError = errors as ApiError
-            console.error('AuthProvider: Sign up error:', {
-                message:
-                    apiError?.response?.data?.error ||
-                    apiError?.response?.data?.message,
-                status: apiError?.response?.status,
-                data: apiError?.response?.data,
-                error: apiError,
-            })
-
-            // Handle specific error cases
-            if (apiError?.response?.status === 400) {
-                const errorData = apiError.response.data as { error: string }
-                if (errorData.error === 'User already exists') {
-                    return {
-                        status: 'failed',
-                        message:
-                            'An account with this email or phone number already exists. Please sign in instead.',
-                    }
-                }
-            }
-
-            return {
-                status: 'failed',
-                message:
-                    apiError?.response?.data?.error ||
-                    apiError?.response?.data?.message ||
-                    'An error occurred during sign up',
-            }
-        }
-    }
-
     return (
         <AuthContext.Provider
             value={{
                 authenticated,
                 user,
-                signIn,
-                verifyOTP,
-                signUp,
+                sendOTP,
+                verifySignIn,
+                verifySignUp,
                 signOut,
                 updateUser,
-                completeProfile,
             }}
         >
             {children}

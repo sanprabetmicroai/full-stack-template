@@ -4,7 +4,6 @@ export type AppConfig = {
     unAuthenticatedEntryPath: string
     locale: string
     accessTokenPersistStrategy: 'localStorage' | 'sessionStorage' | 'cookies'
-    enableMock: boolean
     activeNavTranslation: boolean
 }
 
@@ -14,7 +13,6 @@ const appConfig: AppConfig = {
     unAuthenticatedEntryPath: '/sign-in',
     locale: 'en',
     accessTokenPersistStrategy: 'cookies',
-    enableMock: false,
     activeNavTranslation: true,
 }
 

@@ -40,7 +40,14 @@
         "lastName": "Last Name",
         "email": "Email",
         "phone": "Phone Number",
-        "theme_color": "Theme Color"
+        "theme_color": "Theme Color",
+        "emailSettings": "Email Settings",
+        "phoneSettings": "Phone Settings",
+        "personalInfo": "Personal Information",
+        "noPhone": "No phone number added",
+        "updateInfo": "Update Information",
+        "memberSince": "Member since",
+        "uploadPicture": "Upload Picture"
     },
     "settings": {
         "title": "Settings",
@@ -74,7 +81,10 @@
         "signOut": "Sign Out",
         "language": "Language",
         "upload": "Upload",
-        "uploading": "Uploading..."
+        "uploading": "Uploading...",
+        "update": "Update",
+        "updateEmail": "Update Email",
+        "updatePhone": "Update Phone"
     },
     "theme": {
         "default": "Default",

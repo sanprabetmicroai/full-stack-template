@@ -40,7 +40,14 @@
         "lastName": "Apellido",
         "email": "Correo electrónico",
         "phone": "Número de Teléfono",
-        "theme_color": "Color del Tema"
+        "theme_color": "Color del Tema",
+        "emailSettings": "Configuración de Correo",
+        "phoneSettings": "Configuración de Teléfono",
+        "personalInfo": "Información Personal",
+        "noPhone": "Sin número de teléfono",
+        "updateInfo": "Actualizar Información",
+        "memberSince": "Miembro desde",
+        "uploadPicture": "Subir Foto"
     },
     "settings": {
         "title": "Configuración",
@@ -74,7 +81,10 @@
         "signOut": "Cerrar Sesión",
         "language": "Idioma",
         "upload": "Subir",
-        "uploading": "Subiendo..."
+        "uploading": "Subiendo...",
+        "update": "Actualizar",
+        "updateEmail": "Actualizar Correo",
+        "updatePhone": "Actualizar Teléfono"
     },
     "theme": {
         "default": "Predeterminado",

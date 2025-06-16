@@ -2,13 +2,12 @@ import Avatar from '@/components/ui/Avatar'
 import Dropdown from '@/components/ui/Dropdown'
 import withHeaderItem from '@/utils/hoc/withHeaderItem'
 import { useSessionUser } from '@/store/authStore'
-import { Link } from 'react-router'
+import { Link } from 'react-router-dom'
 import {
     PiUserDuotone,
     PiSignOutDuotone,
     PiGearDuotone,
     PiBellDuotone,
-    PiLayoutDuotone,
 } from 'react-icons/pi'
 import { useAuth } from '@/auth'
 import { useLocaleStore } from '@/store/localeStore'
@@ -28,11 +27,6 @@ const languageList = [
 ]
 
 const dropdownItemList: DropdownList[] = [
-    {
-        label: 'Dashboard',
-        path: '/dashboard',
-        icon: <PiLayoutDuotone />,
-    },
     {
         label: 'Profile',
         path: '/profile',

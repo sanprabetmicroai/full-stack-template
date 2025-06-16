@@ -8,8 +8,8 @@ const authRoute: Routes = [
         component: lazy(() => import('@/views/auth/SignIn')),
         authority: [],
         meta: {
-            pageContainerType: 'default'
-        }
+            pageContainerType: 'default',
+        },
     },
     {
         key: 'signUp',
@@ -17,8 +17,17 @@ const authRoute: Routes = [
         component: lazy(() => import('@/views/auth/SignUp')),
         authority: [],
         meta: {
-            pageContainerType: 'default'
-        }
+            pageContainerType: 'default',
+        },
+    },
+    {
+        key: 'verifyOTP',
+        path: `/verify-otp`,
+        component: lazy(() => import('@/views/auth/VerifyOTP')),
+        authority: [],
+        meta: {
+            pageContainerType: 'default',
+        },
     },
 ]
 

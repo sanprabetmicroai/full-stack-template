@@ -132,7 +132,6 @@ function useMove<T extends HTMLElement = any>(
                 node.removeEventListener('touchstart', onTouchStart)
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dir, onChange])
 
     return { ref, active }

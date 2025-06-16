@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react'
 import { useRouteKeyStore } from '@/store/routeKeyStore'
-import { useLocation } from 'react-router'
+import { useLocation } from 'react-router-dom'
 import { useThemeStore } from '@/store/themeStore'
 import type { LayoutType } from '@/@types/theme'
 import type { ComponentType } from 'react'
@@ -40,7 +40,6 @@ const AppRoute = <T extends Record<string, unknown>>({
             setLayout(previousLayout)
             setPreviousLayout('')
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.layout, routeKey])
 
     useEffect(() => {

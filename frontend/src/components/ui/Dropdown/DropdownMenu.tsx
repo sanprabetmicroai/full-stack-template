@@ -4,6 +4,7 @@ import {
     useContext,
     useEffect,
     useImperativeHandle,
+    forwardRef,
 } from 'react'
 import DropdownToggle from './DropdownToggle'
 import DropdownSubItem from './DropdownSubItem'
@@ -53,12 +54,15 @@ export interface DropdownMenuProps
     ref?: Ref<HTMLElement | DropdownMenuRef>
 }
 
-export type DropdownMenuRef = {
+export interface DropdownMenuRef {
     handleDropdownOpen: () => void
     handleDropdownClose: () => void
 }
 
-const DropdownMenu = (props: DropdownMenuProps & HTMLProps<HTMLElement>) => {
+const DropdownMenu = forwardRef<
+    DropdownMenuRef,
+    DropdownMenuProps & HTMLProps<HTMLElement>
+>((props, ref) => {
     const {
         children,
         title,
@@ -69,7 +73,6 @@ const DropdownMenu = (props: DropdownMenuProps & HTMLProps<HTMLElement>) => {
         placement,
         trigger = 'click',
         onOpen,
-        ref,
         ...rest
     } = props
 
@@ -79,6 +82,7 @@ const DropdownMenu = (props: DropdownMenuProps & HTMLProps<HTMLElement>) => {
 
     const elementsRef = useRef<Array<HTMLElement | null>>([])
     const labelsRef = useRef<Array<string | null>>([])
+    const domRef = useRef<HTMLElement>(null)
 
     const { direction } = useConfig()
 
@@ -204,7 +208,6 @@ const DropdownMenu = (props: DropdownMenuProps & HTMLProps<HTMLElement>) => {
             tree.events.off('click', handleTreeClick)
             tree.events.off('menuopen', onSubMenuOpen)
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tree, nodeId, parentId])
 
     useEffect(() => {
@@ -213,10 +216,11 @@ const DropdownMenu = (props: DropdownMenuProps & HTMLProps<HTMLElement>) => {
         }
     }, [tree, isOpen, nodeId, parentId])
 
-    const toggleRef = useMergeRefs([refs.setReference, item.ref, ref])
+    const toggleRef = useMergeRefs([refs.setReference, item.ref, domRef])
 
-    useImperativeHandle(ref, () => {
-        return {
+    useImperativeHandle(
+        ref,
+        () => ({
             handleDropdownOpen: () => {
                 setIsOpen(true)
                 onOpen?.(true)
@@ -225,8 +229,9 @@ const DropdownMenu = (props: DropdownMenuProps & HTMLProps<HTMLElement>) => {
                 setIsOpen(false)
                 onOpen?.(false)
             },
-        }
-    }, [onOpen])
+        }),
+        [onOpen],
+    )
 
     const toggleProps = {
         ...getReferenceProps(
@@ -321,6 +326,6 @@ const DropdownMenu = (props: DropdownMenuProps & HTMLProps<HTMLElement>) => {
             </MenuContext.Provider>
         </FloatingNode>
     )
-}
+})
 
 export default DropdownMenu

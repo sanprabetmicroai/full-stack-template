@@ -1,6 +1,6 @@
 import appConfig from '@/configs/app.config'
 import { REDIRECT_URL_KEY } from '@/constants/app.constant'
-import { Navigate, Outlet } from 'react-router'
+import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/auth'
 
 const { unAuthenticatedEntryPath } = appConfig

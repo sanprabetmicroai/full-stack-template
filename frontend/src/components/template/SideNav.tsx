@@ -7,7 +7,7 @@ import { useSessionUser } from '@/store/authStore'
 import { useRouteKeyStore } from '@/store/routeKeyStore'
 import navigationConfig from '@/configs/navigation.config'
 import appConfig from '@/configs/app.config'
-import { Link } from 'react-router'
+import { Link } from 'react-router-dom'
 import {
     SIDE_NAV_WIDTH,
     SIDE_NAV_COLLAPSED_WIDTH,
@@ -87,7 +87,9 @@ const SideNav = ({
                         routeKey={currentRouteKey}
                         direction={direction}
                         translationSetup={translationSetup}
-                        userAuthority={userAuthority || []}
+                        userAuthority={[
+                            ...(userAuthority ? [userAuthority] : []),
+                        ]}
                     />
                 </ScrollBar>
             </div>

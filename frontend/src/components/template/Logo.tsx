@@ -4,22 +4,20 @@ import type { CommonProps } from '@/@types/common'
 
 interface LogoProps extends CommonProps {
     type?: 'full' | 'streamline'
-    mode?: 'light' | 'dark'
     imgClass?: string
     logoWidth?: number | string
 }
 
-const LOGO_SRC_PATH = '/img/logo/'
-
 const Logo = (props: LogoProps) => {
     const {
         type = 'full',
-        mode = 'light',
         className,
         imgClass,
         style,
         logoWidth = 'auto',
     } = props
+
+    const height = type === 'streamline' ? '40px' : '50px'
 
     return (
         <div
@@ -29,10 +27,16 @@ const Logo = (props: LogoProps) => {
                 ...{ width: logoWidth },
             }}
         >
-            <img
-                className={imgClass}
-                src={`${LOGO_SRC_PATH}logo-${mode}-${type}.png`}
-                alt={`${APP_NAME} logo`}
+            <div
+                className={classNames(
+                    'bg-gray-200 dark:bg-gray-700 rounded-md',
+                    imgClass,
+                )}
+                style={{
+                    height,
+                    width: type === 'streamline' ? '40px' : '150px',
+                }}
+                aria-label={`${APP_NAME} logo placeholder`}
             />
         </div>
     )

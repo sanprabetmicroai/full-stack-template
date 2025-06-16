@@ -12,7 +12,7 @@ import appConfig from '@/configs/app.config'
 import navigationIcon from '@/configs/navigation-icon.config'
 import useMenuActive from '@/utils/hooks/useMenuActive'
 import isEmpty from 'lodash/isEmpty'
-import { Link } from 'react-router'
+import { Link } from 'react-router-dom'
 import type { NavigationTree } from '@/@types/navigation'
 import type { Direction, Mode } from '@/@types/theme'
 import type { CommonProps } from '@/@types/common'
@@ -85,7 +85,6 @@ const StackedSideNavMini = (props: StackedSideNavMiniProps) => {
                 translateKey: includedRouteTree.translateKey,
             })
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [includedRouteTree.key])
 
     const defaultActiveKeys =

@@ -1,4 +1,4 @@
-import { Link } from 'react-router'
+import { Link } from 'react-router-dom'
 import classNames from 'classnames'
 import type { CommonProps } from '@/@types/common'
 import type { AnchorHTMLAttributes } from 'react'

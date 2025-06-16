@@ -15,7 +15,7 @@ import {
 } from '@/services/CommonService'
 import isLastChild from '@/utils/isLastChild'
 import useResponsive from '@/utils/hooks/useResponsive'
-import { useNavigate } from 'react-router'
+import { useNavigate } from 'react-router-dom'
 
 import type { DropdownRef } from '@/components/ui/Dropdown'
 

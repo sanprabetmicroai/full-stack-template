@@ -137,7 +137,6 @@ const DatePicker = (props: DatePickerProps) => {
                 setCalendarMonth(minDate)
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [minDate, maxDate])
 
     useEffect(() => {
@@ -150,7 +149,6 @@ const DatePicker = (props: DatePickerProps) => {
                 capitalize(dayjs(value).locale(finalLocale).format(dateFormat)),
             )
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value, focused, themeLocale])
 
     useEffect(() => {
@@ -161,7 +159,6 @@ const DatePicker = (props: DatePickerProps) => {
                 ),
             )
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [themeLocale])
 
     const handleValueChange = (date: Date | null) => {

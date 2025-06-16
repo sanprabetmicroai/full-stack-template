@@ -86,7 +86,13 @@ const StackedSideNav = ({
                         mode={mode}
                         direction={direction}
                         navigationTree={navigationConfig}
-                        userAuthority={userAuthority || []}
+                        userAuthority={
+                            Array.isArray(userAuthority)
+                                ? userAuthority
+                                : userAuthority
+                                  ? [userAuthority]
+                                  : []
+                        }
                         selectedMenu={selectedMenu}
                         t={t as TraslationFn}
                         onChange={handleChange}
@@ -114,7 +120,13 @@ const StackedSideNav = ({
                                 routeKey={currentRouteKey}
                                 direction={direction}
                                 translationSetup={translationSetup}
-                                userAuthority={userAuthority || []}
+                                userAuthority={
+                                    Array.isArray(userAuthority)
+                                        ? userAuthority
+                                        : userAuthority
+                                          ? [userAuthority]
+                                          : []
+                                }
                                 onCollapse={handleCollpase}
                             />
                         )}

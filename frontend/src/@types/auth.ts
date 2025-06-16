@@ -19,15 +19,43 @@ export interface SignInFormSchema {
     otp?: string
 }
 
-export interface SignInResponse extends ApiResponse {
-    phoneNumber: string
+// API Response interfaces matching backend structure
+export interface SendOTPResponse {
+    success: boolean
+    message: string
+    data: {
+        phoneNumber: string
+    }
 }
 
-export interface VerifyOTPResponse extends ApiResponse {
+export interface VerifyOTPResponse {
+    success: boolean
     message: string
-    profileComplete: boolean
-    token?: string
-    user: User
+    data: {
+        token: string
+        user: User
+    }
+}
+
+export interface SignOutResponse {
+    success: boolean
+    message: string
+}
+
+export interface SignUpResponse {
+    success: boolean
+    message: string
+    data: {
+        user: User
+    }
+}
+
+export interface CompleteProfileResponse {
+    success: boolean
+    message: string
+    data: {
+        user: User
+    }
 }
 
 export interface User {
@@ -60,16 +88,6 @@ export interface ApiResponse<T = unknown> {
     error?: string
 }
 
-export interface SignUpResponse extends ApiResponse {
-    user: User
-}
-
-export interface CompleteProfileResponse extends ApiResponse {
-    message: string
-    token: string
-    user: User
-}
-
 export interface ApiError {
     response?: {
         message?: string
@@ -78,4 +96,12 @@ export interface ApiError {
         error?: string
     }
     toString(): string
+}
+
+export interface SignUpFormSchema {
+    firstName: string
+    lastName: string
+    email: string
+    phoneNumber: string
+    otp?: string
 }

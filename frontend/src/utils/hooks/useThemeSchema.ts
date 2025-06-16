@@ -46,7 +46,6 @@ const useThemeSchema = () => {
         if (themeSchema) {
             applyTheme(themeSchema)
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [themeSchema, mode])
 }
 

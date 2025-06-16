@@ -1,7 +1,8 @@
 import classNames from 'classnames'
 import type { CommonProps } from '../@types/common'
-import type { ElementType, Ref } from 'react'
+import type { ElementType, Ref, forwardRef } from 'react'
 import { PiDotOutlineFill } from 'react-icons/pi'
+import { forwardRef as reactForwardRef } from 'react'
 
 export interface MenuItemProps extends CommonProps {
     asElement?: ElementType
@@ -12,10 +13,9 @@ export interface MenuItemProps extends CommonProps {
     isActive?: boolean
     menuItemHeight?: string | number
     onSelect?: (eventKey: string, e: MouseEvent) => void
-    ref?: Ref<HTMLElement>
 }
 
-const MenuItem = (props: MenuItemProps) => {
+const MenuItem = reactForwardRef<HTMLElement, MenuItemProps>((props, ref) => {
     const {
         asElement: Component = 'div',
         children,
@@ -26,7 +26,6 @@ const MenuItem = (props: MenuItemProps) => {
         isActive,
         menuItemHeight = 42,
         onSelect,
-        ref,
         style,
         ...rest
     } = props
@@ -74,6 +73,8 @@ const MenuItem = (props: MenuItemProps) => {
             )}
         </Component>
     )
-}
+})
+
+MenuItem.displayName = 'MenuItem'
 
 export default MenuItem

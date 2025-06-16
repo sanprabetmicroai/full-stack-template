@@ -34,7 +34,6 @@ const Group = (props: RadioGroupProps) => {
         if (valueProp !== value) {
             setValue(valueProp)
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [valueProp])
 
     const onRadioGroupChange = useCallback(

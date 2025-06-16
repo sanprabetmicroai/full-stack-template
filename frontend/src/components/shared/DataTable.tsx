@@ -84,7 +84,6 @@ const IndeterminateCheckbox = (props: IndeterminateCheckboxProps) => {
         if (typeof indeterminate === 'boolean' && ref.current) {
             ref.current.indeterminate = !rest.checked && indeterminate
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ref, indeterminate])
 
     const handleChange = (e: CheckBoxChangeEvent) => {
@@ -156,7 +155,6 @@ function DataTable<T>(props: DataTableProps<T>) {
             const id = sorting.length > 0 ? sorting[0].id : ''
             onSort?.({ order: sortOrder, key: id })
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sorting])
 
     const handleIndeterminateCheckBoxChange = (
@@ -224,7 +222,6 @@ function DataTable<T>(props: DataTableProps<T>) {
             ]
         }
         return columns
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [columnsProp, selectable, loading, checkboxChecked])
 
     const table = useReactTable({

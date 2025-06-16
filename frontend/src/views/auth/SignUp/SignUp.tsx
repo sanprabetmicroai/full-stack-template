@@ -2,15 +2,15 @@ import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/auth'
 import Button from '@/components/ui/Button'
 import FormItem from '@/components/ui/Form/FormItem'
 import { Form } from '@/components/ui/Form'
 import Input from '@/components/ui/Input'
+import PhoneInput from '@/components/shared/PhoneInput'
 import Logo from '@/components/template/Logo'
-import { Link, useNavigate } from 'react-router-dom'
-import { toast } from '@/components/ui/toast'
-import { Notification } from '@/components/ui/Notification'
+import Alert from '@/components/ui/Alert'
 
 const validationSchema = z.object({
     firstName: z
@@ -25,10 +25,11 @@ const validationSchema = z.object({
         .string()
         .min(1, { message: 'Please enter your email' })
         .email({ message: 'Please enter a valid email' }),
+    dialCode: z.string().min(1, { message: 'Please select a country code' }),
     phoneNumber: z
         .string()
         .min(1, { message: 'Please enter your phone number' })
-        .regex(/^\+?[1-9]\d{1,14}$/, {
+        .regex(/^[0-9]+$/, {
             message: 'Please enter a valid phone number',
         }),
 })
@@ -37,7 +38,9 @@ type SignUpFormSchema = z.infer<typeof validationSchema>
 
 const SignUp = () => {
     const [isSubmitting, setSubmitting] = useState<boolean>(false)
-    const { signUp } = useAuth()
+    const [error, setError] = useState<string>('')
+
+    const { sendOTP } = useAuth()
     const navigate = useNavigate()
 
     const {
@@ -49,6 +52,7 @@ const SignUp = () => {
             firstName: '',
             lastName: '',
             email: '',
+            dialCode: '+1',
             phoneNumber: '',
         },
         resolver: zodResolver(validationSchema),
@@ -56,47 +60,40 @@ const SignUp = () => {
 
     const onSubmit = async (data: SignUpFormSchema) => {
         setSubmitting(true)
+        setError('')
+
         try {
-            // Combine firstName and lastName into name for the API
-            const signUpData = {
-                ...data,
-                name: `${data.firstName} ${data.lastName}`,
-            }
-            const result = await signUp(signUpData)
-            if (result?.status === 'sign_in_required') {
-                toast.push(
-                    <Notification title="Success" type="success">
-                        Account created successfully! Please sign in.
-                    </Notification>,
+            const fullPhoneNumber = data.dialCode + data.phoneNumber
+            console.log('SignUp: Sending OTP for:', fullPhoneNumber)
+            const result = await sendOTP({ phoneNumber: fullPhoneNumber })
+
+            if (result?.status === 'success') {
+                console.log(
+                    'SignUp: OTP sent successfully, navigating to verification',
                 )
-                navigate('/sign-in')
-            } else if (result?.status === 'success') {
-                toast.push(
-                    <Notification title="Success" type="success">
-                        Account created successfully! Please verify your phone
-                        number.
-                    </Notification>,
-                )
-                navigate('/verify-email')
+                // Navigate to OTP verification with sign-up data
+                navigate('/verify-otp', {
+                    state: {
+                        phoneNumber: fullPhoneNumber,
+                        isSignUp: true,
+                        userData: {
+                            firstName: data.firstName,
+                            lastName: data.lastName,
+                            email: data.email,
+                            phoneNumber: fullPhoneNumber,
+                        },
+                    },
+                })
             } else {
-                toast.push(
-                    <Notification title="Error" type="danger">
-                        {result?.message || 'Failed to create account'}
-                    </Notification>,
-                )
+                console.error('SignUp: Failed to send OTP:', result)
+                setError(result.message)
             }
-        } catch (error: unknown) {
-            const errorMessage =
-                error instanceof Error
-                    ? error.message
-                    : 'An unexpected error occurred. Please try again later.'
-            toast.push(
-                <Notification title="Error" type="danger">
-                    {errorMessage}
-                </Notification>,
-            )
+        } catch (error) {
+            console.error('SignUp: Unexpected error:', error)
+            setError('An unexpected error occurred')
+        } finally {
+            setSubmitting(false)
         }
-        setSubmitting(false)
     }
 
     return (
@@ -107,9 +104,16 @@ const SignUp = () => {
             <div className="mb-10">
                 <h2 className="mb-2">Create Account</h2>
                 <p className="font-semibold heading-text">
-                    Please fill in your details to sign up!
+                    Please fill in your details to get started!
                 </p>
             </div>
+
+            {error && (
+                <Alert showIcon className="mb-4" type="danger">
+                    <span className="break-all">{error}</span>
+                </Alert>
+            )}
+
             <div>
                 <Form onSubmit={handleSubmit(onSubmit)}>
                     <FormItem
@@ -129,6 +133,7 @@ const SignUp = () => {
                             )}
                         />
                     </FormItem>
+
                     <FormItem
                         label="Last Name"
                         invalid={Boolean(errors.lastName)}
@@ -146,6 +151,7 @@ const SignUp = () => {
                             )}
                         />
                     </FormItem>
+
                     <FormItem
                         label="Email"
                         invalid={Boolean(errors.email)}
@@ -163,32 +169,24 @@ const SignUp = () => {
                             )}
                         />
                     </FormItem>
-                    <FormItem
-                        label="Whatsapp Number"
-                        invalid={Boolean(errors.phoneNumber)}
-                        errorMessage={errors.phoneNumber?.message}
-                    >
-                        <Controller
-                            name="phoneNumber"
-                            control={control}
-                            render={({ field }) => (
-                                <Input
-                                    type="tel"
-                                    placeholder="+1234567890"
-                                    {...field}
-                                />
-                            )}
-                        />
-                    </FormItem>
+
+                    <PhoneInput
+                        control={control}
+                        errors={errors}
+                        placeholder="Enter your phone number"
+                    />
+
                     <Button
                         block
                         loading={isSubmitting}
                         variant="solid"
                         type="submit"
+                        disabled={isSubmitting}
                     >
-                        Sign Up
+                        Continue
                     </Button>
                 </Form>
+
                 <div className="mt-4 text-center">
                     <span>Already have an account? </span>
                     <Link to="/sign-in" className="text-primary-500">

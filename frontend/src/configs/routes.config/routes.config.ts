@@ -13,8 +13,8 @@ export const protectedRoutes: Routes = [
         component: lazy(() => import('@/views/Home')),
         authority: [],
         meta: {
-            pageContainerType: 'default'
-        }
+            pageContainerType: 'default',
+        },
     },
     ...profileRoute,
     ...othersRoute,

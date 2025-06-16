@@ -12,7 +12,6 @@ function useTimeOutMessage(
                 clearTimeout(timeout)
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [message])
 
     return [message, setMessage]

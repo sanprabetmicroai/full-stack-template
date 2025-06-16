@@ -73,7 +73,7 @@ const Radio = (props: RadioProps) => {
             onGroupChange?.(value, e)
             onChange?.(value, e)
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
         [
             disabled,
             setRadioChecked,
@@ -90,7 +90,6 @@ const Radio = (props: RadioProps) => {
         if (radioChecked !== propChecked) {
             setRadioChecked(propChecked)
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value, checkedProp, groupValue])
 
     const radioDefaultClass = `radio peer ${radioColor}`

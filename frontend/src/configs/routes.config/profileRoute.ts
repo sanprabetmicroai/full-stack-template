@@ -15,16 +15,6 @@ const profileRoute: Routes = [
         },
     },
     {
-        key: 'dashboard',
-        path: '/dashboard',
-        component: lazy(() => import('@/views/profile/Dashboard')),
-        authority: [USER],
-        meta: {
-            pageContainerType: 'contained',
-            layout: LAYOUT_COLLAPSIBLE_SIDE,
-        },
-    },
-    {
         key: 'settings',
         path: '/settings',
         component: lazy(() => import('@/views/profile/Settings')),

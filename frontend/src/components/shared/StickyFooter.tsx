@@ -49,7 +49,6 @@ const StickyFooter = (props: StickyFooterProps) => {
         return function () {
             observer.unobserve(cachedRef as Element)
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     return (

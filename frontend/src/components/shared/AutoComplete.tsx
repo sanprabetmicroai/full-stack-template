@@ -72,7 +72,6 @@ function AutoComplete<T>(props: AutoCompleteProps<T>) {
             optionKey(item).toLowerCase().includes(value.toLowerCase()),
         )
         setOptions(items)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value])
 
     const { refs, floatingStyles, context } = useFloating<HTMLInputElement>({

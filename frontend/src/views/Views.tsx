@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import Loading from '@/components/shared/Loading'
 import AllRoutes from '@/components/route/AllRoutes'
-import { useLocation } from 'react-router'
+import { useLocation } from 'react-router-dom'
 import type { LayoutType } from '@/@types/theme'
 
 interface ViewsProps {

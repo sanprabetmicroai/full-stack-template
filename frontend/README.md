@@ -1,24 +1,92 @@
-# Ecme - The Ultimate React, Vite & TypeScript Web Template
+# Kars - Project Management System
 
-Ecme  is a modern and responsive admin dashboard template built with React and TypeScript. Designed to provide a highly customizable and easy-to-use platform for building admin interfaces, it includes a variety of reusable components, pre-designed pages, and dynamic features. 
+Kars is a modern and responsive project management system built with React and TypeScript. It provides a highly customizable and easy-to-use platform for managing projects and tasks efficiently.
 
-This template is perfect for developing dashboards, web applications, CRM systems, e-commerce backends, and more. Whether you're building a small-scale admin panel or a large-scale enterprise application, Ecme is designed to be flexible and scalable.
+## Features
 
-Key Features:
-- **Responsive Layout**: Optimized for all screen sizes and devices.
-- **Dark/Light Mode**: Easily switch between light and dark themes.
-- **Configurable Themes**: Personalize colors, layouts, and more to fit your needs.
-- **Built with React + TypeScript**: Ensures robust type-checking and fast development.
-- **Multi-Locale Support**: Easily add and manage multiple languages.
-- **RTL Support**: Full Right-to-Left support for languages like Arabic or Hebrew.
-- **Tailwind Component-Based Architecture**: Reusable components to streamline your development process.
-- **API Ready**: Simple integration with any RESTful API.
+- Modern React with TypeScript
+- Vite for fast development and building
+- Tailwind CSS for styling
+- Comprehensive authentication system
+- Project and task management
+- User management
+- Modern and responsive UI
+- Dark/Light mode support
+- Firebase Integration (Firestore & Storage)
 
----
-### Demo
-Check out the [Live Demo](https://ecme-react.themenate.net/) to explore the template in action.
+## Getting Started
 
+### Local Development
 
-### Guide
-Please visit our [Online documentation](https://ecme-react.themenate.net/guide/documentation/introduction) for detailed guides, setup instructions, and customization options.
+1. Set up environment variables:
+   Create a `.env` file in the frontend directory:
 
+    ```env
+    VITE_API_URL=http://localhost:3000/api
+    VITE_FIREBASE_API_KEY=your_api_key
+    VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
+    VITE_FIREBASE_PROJECT_ID=your_project_id
+    VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+    VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+    VITE_FIREBASE_APP_ID=your_app_id
+    ```
+
+2. Install dependencies:
+
+    ```bash
+    npm install
+    ```
+
+3. Start the development server:
+    ```bash
+    npm run dev
+    ```
+
+### Production Deployment (Google Cloud Run)
+
+1. Set up production environment variables:
+   Create a `.env.production` file:
+
+    ```env
+    VITE_API_URL=https://your-backend-url.run.app
+    VITE_FIREBASE_API_KEY=your_api_key
+    VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
+    VITE_FIREBASE_PROJECT_ID=your_project_id
+    VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+    VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+    VITE_FIREBASE_APP_ID=your_app_id
+    ```
+
+2. Build the Docker image:
+
+    ```bash
+    docker build -t gcr.io/[PROJECT_ID]/kars-frontend .
+    ```
+
+3. Push to Google Container Registry:
+
+    ```bash
+    docker push gcr.io/[PROJECT_ID]/kars-frontend
+    ```
+
+4. Deploy to Cloud Run:
+    ```bash
+    gcloud run deploy kars-frontend \
+      --image gcr.io/[PROJECT_ID]/kars-frontend \
+      --platform managed \
+      --region us-central1 \
+      --allow-unauthenticated
+    ```
+
+### Firebase Configuration
+
+This project uses Firebase for:
+
+- Firestore Database
+- Cloud Storage
+
+No Firebase Hosting is used as the application is deployed on Google Cloud Run.
+
+## License
+
+This project is licensed under the MIT License.

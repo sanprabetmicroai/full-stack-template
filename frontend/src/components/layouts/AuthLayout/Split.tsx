@@ -11,16 +11,13 @@ const Split = ({ children, content, ...rest }: SplitProps) => {
         <div className="grid lg:grid-cols-2 h-full p-6 bg-white dark:bg-gray-800">
             <div className="bg-no-repeat bg-cover py-6 px-16 flex-col justify-center items-center hidden lg:flex bg-primary rounded-3xl">
                 <div className="flex flex-col items-center gap-12">
-                    <img
-                        className="max-w-[450px] 2xl:max-w-[900px]"
-                        src="/img/others/auth-split-img.png"
-                    />
+                    <div className="w-full max-w-[450px] 2xl:max-w-[900px] h-[300px] bg-gray-200 dark:bg-gray-700 rounded-md" />
                     <div className="text-center max-w-[550px]">
                         <h1 className="text-neutral">
                             The easiest way to build your admin app
                         </h1>
                         <p className="text-neutral opacity-80 mx-auto mt-8 font-semibold">
-                            Experience seamless project management with Ecme.
+                            Experience seamless project management with Kars.
                             Simplify your workflow, and achieve your goals
                             efficiently with our powerful and intuitive tools.
                         </p>

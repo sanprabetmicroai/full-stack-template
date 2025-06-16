@@ -30,8 +30,8 @@ export const useSessionUser = create<SessionUserState>()(
     persist(
         (set) => ({
             ...initialState,
-            setUser: (user: User) => set({ user }),
-            setSessionSignedIn: (signedIn: boolean) => set({ signedIn }),
+            setUser: (user) => set({ user }),
+            setSessionSignedIn: (signedIn) => set({ signedIn }),
         }),
         {
             name: 'session-storage',
@@ -48,7 +48,7 @@ export const useToken = create<TokenState>()(
     persist(
         (set) => ({
             token: '',
-            setToken: (token: string) => set({ token }),
+            setToken: (token) => set({ token }),
         }),
         {
             name: 'token-storage',

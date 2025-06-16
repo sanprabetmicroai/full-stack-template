@@ -142,7 +142,7 @@ const Month = (props: MonthProps) => {
 
                     return !dayProps.disabled && !dayProps.outOfMonth
                 }) || dayjs(month).startOf('month').toDate(),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
         [],
     )
 

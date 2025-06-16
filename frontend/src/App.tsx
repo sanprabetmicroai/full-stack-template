@@ -3,23 +3,23 @@ import Theme from '@/components/template/Theme'
 import Layout from '@/components/layouts'
 import { AuthProvider } from '@/auth'
 import Views from '@/views'
-import appConfig from './configs/app.config'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-if (appConfig.enableMock) {
-    import('./mock')
-}
+const queryClient = new QueryClient()
 
 function App() {
     return (
-        <Theme>
-            <BrowserRouter>
-                <AuthProvider>
-                    <Layout>
-                        <Views />
-                    </Layout>
-                </AuthProvider>
-            </BrowserRouter>
-        </Theme>
+        <QueryClientProvider client={queryClient}>
+            <Theme>
+                <BrowserRouter>
+                    <AuthProvider>
+                        <Layout>
+                            <Views />
+                        </Layout>
+                    </AuthProvider>
+                </BrowserRouter>
+            </Theme>
+        </QueryClientProvider>
     )
 }
 

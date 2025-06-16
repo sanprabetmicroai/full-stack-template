@@ -1,5 +1,8 @@
 import { lazy } from 'react'
-import { publicRoutes as existingPublicRoutes, protectedRoutes } from './routes.config'
+import {
+    publicRoutes as existingPublicRoutes,
+    protectedRoutes,
+} from './routes.config'
 
 const publicRoutes = [
     {
@@ -8,8 +11,8 @@ const publicRoutes = [
         component: lazy(() => import('@/views/access-denied/AccessDenied')),
         authority: [],
         meta: {
-            pageContainerType: 'default'
-        }
+            pageContainerType: 'default',
+        },
     },
     ...existingPublicRoutes,
 ]

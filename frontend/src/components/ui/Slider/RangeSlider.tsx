@@ -126,7 +126,7 @@ const RangeSlider = (props: RangeSliderProps) => {
                 valueRef.current = value
             }
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
         Array.isArray(value) ? [value[0], value[1]] : [null, null],
     )
 

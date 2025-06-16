@@ -1,18 +1,16 @@
 // @ts-check
 
-import { fixupConfigRules } from '@eslint/compat'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import js from '@eslint/js'
-import { FlatCompat } from '@eslint/eslintrc'
 import tseslint from 'typescript-eslint'
+import * as importPlugin from 'eslint-plugin-import'
+import * as reactPlugin from 'eslint-plugin-react'
+import * as reactHooksPlugin from 'eslint-plugin-react-hooks'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const compat = new FlatCompat({
-    baseDirectory: __dirname,
-})
 
 export default tseslint.config(
     [
@@ -29,30 +27,21 @@ export default tseslint.config(
                 '**/tailwind.config.cjs',
             ],
         },
-        ...fixupConfigRules(
-            compat.extends(
-                'eslint:recommended',
-                'plugin:import/recommended',
-                'plugin:react/recommended',
-                'plugin:react-hooks/recommended',
-                'prettier',
-                'eslint-config-prettier',
-            ),
-        ),
+        js.configs.recommended,
         {
             plugins: {
                 'react-refresh': reactRefresh,
+                'import': importPlugin,
+                'react': reactPlugin,
+                'react-hooks': reactHooksPlugin,
             },
-
             settings: {
                 react: {
                     version: 'detect',
                 },
-
                 'import/parsers': {
                     '@typescript-eslint/parser': ['.ts', '.tsx'],
                 },
-
                 'import/resolver': {
                     typescript: {
                         project: './tsconfig.eslint.json',
@@ -76,16 +65,6 @@ export default tseslint.config(
                 'import/no-duplicates': 'error',
                 'import/no-named-as-default': 0,
                 'react/prop-types': 'off',
-                'react/jsx-sort-props': [
-                    'warn',
-                    {
-                        callbacksLast: true,
-                        shorthandFirst: true,
-                        ignoreCase: true,
-                        reservedFirst: true,
-                        noSortAlphabetically: true,
-                    },
-                ],
             },
         },
     ],

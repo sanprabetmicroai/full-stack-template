@@ -59,7 +59,6 @@ const Upload = (props: UploadProps) => {
         if (JSON.stringify(files) !== JSON.stringify(fileList)) {
             setFiles(fileList)
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [JSON.stringify(fileList)])
 
     const triggerMessage = (msg: string | ReactNode = '') => {

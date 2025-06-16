@@ -3,344 +3,402 @@ const { db } = require('../config/firebase');
 const twilioClient = require('../config/twilio');
 const { v4: uuidv4 } = require('uuid');
 
+
 const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-const sendOTP = async (phoneNumber, otp) => {
+const isValidPhoneNumber = (phoneNumber) => {
+    const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+    return phoneRegex.test(phoneNumber);
+};
+
+const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+};
+
+const sendSMS = async (phoneNumber, otp) => {
     try {
-        console.log('Attempting to send OTP via Twilio:', { phoneNumber, otp });
+        console.log('Sending OTP via Twilio:', { phoneNumber, otp });
+        console.log('Twilio client status:', {
+            isNull: twilioClient === null,
+            hasMessages: twilioClient?.messages !== undefined,
+            hasCreate: twilioClient?.messages?.create !== undefined
+        });
+        
+        if (!twilioClient) {
+            throw new Error('Twilio client is not initialized');
+        }
+
         const message = await twilioClient.messages.create({
-            body: `Your OTP is: ${otp}. Valid for 5 minutes.`,
+            body: `Your verification code is: ${otp}. Valid for 5 minutes.`,
             to: phoneNumber,
             from: process.env.TWILIO_PHONE_NUMBER
         });
-        console.log('Twilio message sent successfully:', { messageSid: message.sid });
-        return true;
+        console.log('SMS sent successfully:', { messageSid: message.sid });
+        return { success: true, messageSid: message.sid };
     } catch (error) {
-        console.error('Error sending OTP via Twilio:', {
+        console.error('Error sending SMS:', {
             error: error.message,
             code: error.code,
             status: error.status,
-            details: error.moreInfo
+            stack: error.stack
         });
-        return false;
+        return { success: false, error: error.message };
     }
 };
 
-const signIn = async (req, res) => {
+const generateJWTToken = (userId, phoneNumber) => {
+    return jwt.sign(
+        { userId, phoneNumber },
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' }
+    );
+};
+
+const checkUserExists = async (phoneNumber) => {
     try {
-        const { phoneNumber } = req.body;
-        console.log('Received sign in request for phone number:', phoneNumber);
-    
-        if (!phoneNumber) {
-            console.error('Phone number missing in request');
-            return res.status(400).json({ error: 'Phone number is required' });
-        }
-
-        // Generate OTP
-        const otp = generateOTP();
-        const timestamp = new Date();
-        console.log('Generated OTP:', { otp, timestamp });
-
-        // Check if user exists by phone number
         const usersRef = db.collection('users');
         const userQuery = await usersRef.where('phoneNumber', '==', phoneNumber).get();
-        console.log('User query result:', userQuery.empty ? 'No user found' : 'User found');
-
+        
         if (userQuery.empty) {
-            console.log('Creating new user document');
-            // Create new user with UUID
-            const userId = uuidv4();
-            await usersRef.doc(userId).set({
-                id: userId,
-                phoneNumber,
-                createdAt: timestamp,
-                signInCount: 1,
-                lastSignIn: timestamp
-            });
-        } else {
-            console.log('Updating existing user document');
-            const userDoc = userQuery.docs[0];
-            // Update existing user's sign-in count and last sign-in time
-            await userDoc.ref.update({
-                signInCount: (userDoc.data().signInCount || 0) + 1,
-                lastSignIn: timestamp
-            });
+            return { exists: false, user: null };
         }
+        
+        const userDoc = userQuery.docs[0];
+        return { exists: true, user: { id: userDoc.id, ...userDoc.data() } };
+    } catch (error) {
+        console.error('Error checking user existence:', error);
+        throw error;
+    }
+};
 
-        // Save OTP with timestamp
-        console.log('Saving OTP to Firestore');
+const storeOTP = async (phoneNumber, otp) => {
+    try {
+        const timestamp = new Date();
         const ttlTimestamp = new Date();
-        ttlTimestamp.setMinutes(ttlTimestamp.getMinutes() + 5); // 5 minutes TTL
+        ttlTimestamp.setMinutes(ttlTimestamp.getMinutes() + 5);
         
         await db.collection('otps').doc(phoneNumber).set({
             otp,
             timestamp,
-            ttl: ttlTimestamp
+            ttl: ttlTimestamp,
+            attempts: 0
         });
-
-        // Send OTP via Twilio
-        console.log('Initiating OTP send via Twilio');
-        const otpSent = await sendOTP(phoneNumber, otp);
-    
-        if (!otpSent) {
-            console.error('Failed to send OTP via Twilio');
-            return res.status(500).json({ error: 'Failed to send OTP' });
-        }
-
-        console.log('OTP process completed successfully');
-        res.status(200).json({ 
-            message: 'OTP sent successfully',
-            phoneNumber 
-        });
-
+        
+        console.log('OTP stored successfully:', { phoneNumber, timestamp });
+        return true;
     } catch (error) {
-        console.error('Error in signIn controller:', {
-            message: error.message,
-            stack: error.stack,
-            code: error.code
-        });
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Error storing OTP:', error);
+        throw error;
     }
 };
 
-const verifyOTP = async (req, res) => {
+const verifyStoredOTP = async (phoneNumber, providedOTP) => {
     try {
-        const { phoneNumber, otp } = req.body;
-        console.log('Verifying OTP for:', { phoneNumber, otp });
-
-        if (!phoneNumber || !otp) {
-            return res.status(400).json({ error: 'Phone number and OTP are required' });
-        }
-
-        // Get OTP from Firestore
         const otpRef = db.collection('otps').doc(phoneNumber);
         const otpDoc = await otpRef.get();
 
         if (!otpDoc.exists) {
-            console.log('OTP document not found for phone number:', phoneNumber);
-            return res.status(400).json({ error: 'OTP not found' });
+            return { valid: false, error: 'OTP not found or expired' };
         }
 
         const otpData = otpDoc.data();
-        console.log('Retrieved OTP data:', { 
-            storedOTP: otpData.otp,
-            timestamp: otpData.timestamp,
-            verified: otpData.verified 
-        });
-
         const otpTimestamp = otpData.timestamp.toDate();
         const currentTime = new Date();
-        const timeDiff = (currentTime - otpTimestamp) / 1000 / 60; // difference in minutes
+        const timeDiff = (currentTime - otpTimestamp) / 1000 / 60;
 
-        // Check if OTP is expired (5 minutes)
         if (timeDiff > 5) {
-            console.log('OTP expired. Time difference:', timeDiff, 'minutes');
-            return res.status(400).json({ error: 'OTP expired' });
+            await otpRef.delete();
+            return { valid: false, error: 'OTP has expired' };
         }
 
-        // Verify OTP
-        if (otpData.otp !== otp) {
-            console.log('Invalid OTP. Received:', otp, 'Expected:', otpData.otp);
-            return res.status(400).json({ error: 'Invalid OTP' });
+        if (otpData.attempts >= 3) {
+            await otpRef.delete();
+            return { valid: false, error: 'Maximum verification attempts exceeded' };
         }
 
-        // Delete OTP document after successful verification
+        if (otpData.otp !== providedOTP) {
+            await otpRef.update({ attempts: otpData.attempts + 1 });
+            return { valid: false, error: 'Invalid OTP' };
+        }
+
         await otpRef.delete();
-        console.log('OTP document deleted after successful verification');
+        console.log('OTP verified and deleted successfully');
+        return { valid: true };
+    } catch (error) {
+        console.error('Error verifying OTP:', error);
+        throw error;
+    }
+};
 
-        // Get user data
-        const usersRef = db.collection('users');
-        const userQuery = await usersRef.where('phoneNumber', '==', phoneNumber).get();
-        const userDoc = userQuery.docs[0];
-        const userData = userDoc.data();
+const sendOTP = async (req, res) => {
+    try {
+        const { phoneNumber } = req.body;
+        
+        console.log('Send OTP request received:', {
+            phoneNumber,
+            headers: req.headers,
+            ip: req.ip,
+            timestamp: new Date().toISOString()
+        });
 
-        // Check if user profile is complete
-        const isProfileComplete = userData.firstName && 
-                                userData.lastName && 
-                                userData.email && 
-                                userData.phoneNumber;
-
-        if (!isProfileComplete) {
-            return res.status(200).json({
-                message: 'OTP verified successfully',
-                profileComplete: false,
-                user: {
-                    id: userData.id,
-                    phoneNumber: userData.phoneNumber,
-                    firstName: userData.firstName || '',
-                    lastName: userData.lastName || '',
-                    email: userData.email || ''
-                }
+        if (!phoneNumber) {
+            console.log('Send OTP validation failed: Phone number is missing');
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Phone number is required' 
             });
         }
 
-        // Generate JWT token with user ID
-        const token = jwt.sign(
-            { 
-                userId: userData.id,
-                phoneNumber: userData.phoneNumber 
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' }
-        );
+        if (!isValidPhoneNumber(phoneNumber)) {
+            console.log('Send OTP validation failed: Invalid phone number format', { phoneNumber });
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Please provide a valid phone number' 
+            });
+        }
+
+        const otp = generateOTP();
+        console.log('Generated OTP:', { phoneNumber, otpLength: otp.length });
+        
+        try {
+            await storeOTP(phoneNumber, otp);
+            console.log('OTP stored successfully in database');
+        } catch (dbError) {
+            console.error('Failed to store OTP in database:', dbError);
+            throw dbError;
+        }
+
+        const smsResult = await sendSMS(phoneNumber, otp);
+        console.log('SMS sending result:', smsResult);
+        
+        if (!smsResult.success) {
+            console.error('Failed to send SMS:', smsResult.error);
+            return res.status(500).json({ 
+                success: false, 
+                message: 'Failed to send verification code. Please try again.' 
+            });
+        }
+
+        console.log('OTP process completed successfully:', { 
+            phoneNumber,
+            messageSid: smsResult.messageSid,
+            timestamp: new Date().toISOString()
+        });
+        
+        res.status(200).json({
+            success: true,
+            message: 'Verification code sent successfully',
+            data: { phoneNumber }
+        });
+
+    } catch (error) {
+        console.error('Error in sendOTP:', {
+            error: error.message,
+            stack: error.stack,
+            timestamp: new Date().toISOString()
+        });
+        res.status(500).json({ 
+            success: false, 
+            message: 'Internal server error' 
+        });
+    }
+};
+
+const verifyOTPSignIn = async (req, res) => {
+    try {
+        const { phoneNumber, otp } = req.body;
+        
+        console.log('Verify OTP Sign In request:', { phoneNumber, otp });
+
+        if (!phoneNumber || !otp) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Phone number and verification code are required' 
+            });
+        }
+
+        const otpResult = await verifyStoredOTP(phoneNumber, otp);
+        
+        if (!otpResult.valid) {
+            return res.status(400).json({ 
+                success: false, 
+                message: otpResult.error 
+            });
+        }
+
+        const userResult = await checkUserExists(phoneNumber);
+        
+        if (!userResult.exists) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'No account found with this phone number. Please sign up first.' 
+            });
+        }
+
+        const user = userResult.user;
+
+        const usersRef = db.collection('users');
+        await usersRef.doc(user.id).update({
+            lastSignIn: new Date(),
+            signInCount: (user.signInCount || 0) + 1
+        });
+
+        const token = generateJWTToken(user.id, user.phoneNumber);
+
+        console.log('Sign in successful:', { userId: user.id, phoneNumber });
 
         res.status(200).json({
-            message: 'OTP verified successfully',
-            profileComplete: true,
-            token,
-            user: {
-                id: userData.id,
-                phoneNumber: userData.phoneNumber,
-                firstName: userData.firstName,
-                lastName: userData.lastName,
-                email: userData.email
+            success: true,
+            message: 'Sign in successful',
+            data: {
+                token,
+                user: {
+                    id: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    email: user.email,
+                    phoneNumber: user.phoneNumber,
+                    createdAt: user.createdAt
+                }
             }
         });
 
     } catch (error) {
-        console.error('Detailed error in verifyOTP:', {
-            message: error.message,
-            stack: error.stack,
-            code: error.code
-        });
+        console.error('Error in verifyOTPSignIn:', error);
         res.status(500).json({ 
-            error: 'Internal server error',
-            details: error.message 
+            success: false, 
+            message: 'Internal server error' 
         });
     }
 };
 
-const signOut = async (req, res) => {
+const verifyOTPSignUp = async (req, res) => {
     try {
-    // Since we're using JWT, we don't need to do anything on the server side
-    // The client should remove the token from their storage
-        res.status(200).json({ message: 'Signed out successfully' });
-    } catch (error) {
-        console.error('Error in signOut:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-};
+        const { phoneNumber, otp, userData } = req.body;
+        
+        console.log('Verify OTP Sign Up request:', { phoneNumber, otp, userData });
 
-const signUp = async (req, res) => {
-    try {
-        const { firstName, lastName, email, phoneNumber, name } = req.body;
-        console.log('Received sign up request:', { firstName, lastName, email, phoneNumber, name });
-
-        if (!firstName || !lastName || !email || !phoneNumber) {
-            console.error('Missing required fields in sign up request');
-            return res.status(400).json({ error: 'First name, last name, email, and phone number are required' });
+        if (!phoneNumber || !otp || !userData) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Phone number, verification code, and user data are required' 
+            });
         }
 
-        // Check if user already exists by phone number
+        const { firstName, lastName, email } = userData;
+
+        if (!firstName || !lastName || !email) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'First name, last name, and email are required' 
+            });
+        }
+
+        if (!isValidEmail(email)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Please provide a valid email address' 
+            });
+        }
+
+        const otpResult = await verifyStoredOTP(phoneNumber, otp);
+        
+        if (!otpResult.valid) {
+            return res.status(400).json({ 
+                success: false, 
+                message: otpResult.error 
+            });
+        }
+
+        const userResult = await checkUserExists(phoneNumber);
+        
+        if (userResult.exists) {
+            return res.status(409).json({ 
+                success: false, 
+                message: 'An account with this phone number already exists. Please sign in instead.' 
+            });
+        }
+
         const usersRef = db.collection('users');
-        const userQuery = await usersRef.where('phoneNumber', '==', phoneNumber).get();
-
-        if (!userQuery.empty) {
-            console.log('User already exists with phone number:', phoneNumber);
-            return res.status(400).json({ error: 'User already exists' });
+        const emailQuery = await usersRef.where('email', '==', email).get();
+        
+        if (!emailQuery.empty) {
+            return res.status(409).json({ 
+                success: false, 
+                message: 'An account with this email already exists' 
+            });
         }
 
-        // Create new user with UUID
         const userId = uuidv4();
         const timestamp = new Date();
         
-        await usersRef.doc(userId).set({
+        const newUser = {
             id: userId,
-            firstName,
-            lastName,
-            name,
-            email,
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            email: email.toLowerCase().trim(),
             phoneNumber,
             createdAt: timestamp,
-            signInCount: 0,
-            lastSignIn: null
-        });
+            lastSignIn: timestamp,
+            signInCount: 1,
+            isActive: true
+        };
+
+        await usersRef.doc(userId).set(newUser);
+
+        const token = generateJWTToken(userId, phoneNumber);
+
+        console.log('Account created successfully:', { userId, phoneNumber, email });
 
         res.status(201).json({
-            message: 'User created successfully',
-            user: {
-                id: userId,
-                firstName,
-                lastName,
-                name,
-                email,
-                phoneNumber
+            success: true,
+            message: 'Account created successfully',
+            data: {
+                token,
+                user: {
+                    id: userId,
+                    firstName: newUser.firstName,
+                    lastName: newUser.lastName,
+                    email: newUser.email,
+                    phoneNumber: newUser.phoneNumber,
+                    createdAt: newUser.createdAt
+                }
             }
         });
 
     } catch (error) {
-        console.error('Error in signUp:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Error in verifyOTPSignUp:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Internal server error' 
+        });
     }
 };
 
-const completeProfile = async (req, res) => {
+
+const signOut = async (req, res) => {
     try {
-        const { id, firstName, lastName, email } = req.body;
-        console.log('Completing profile for user:', { id, firstName, lastName, email });
-
-        if (!id || !firstName || !lastName || !email) {
-            console.error('Missing required fields in profile completion request');
-            return res.status(400).json({ error: 'First name, last name, and email are required' });
-        }
-
-        // Validate email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            return res.status(400).json({ error: 'Invalid email format' });
-        }
-
-        // Get user data
-        const userRef = db.collection('users').doc(id);
-        const userDoc = await userRef.get();
-
-        if (!userDoc.exists) {
-            console.error('User not found:', id);
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        // Update user profile
-        await userRef.update({
-            firstName,
-            lastName,
-            email,
-            updatedAt: new Date()
-        });
-
-        // Generate new JWT token
-        const token = jwt.sign(
-            { 
-                userId: id,
-                phoneNumber: userDoc.data().phoneNumber 
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' }
-        );
-
+        console.log('User signed out');
+        
         res.status(200).json({
-            message: 'Profile completed successfully',
-            token,
-            user: {
-                id,
-                firstName,
-                lastName,
-                email,
-                phoneNumber: userDoc.data().phoneNumber
-            }
+            success: true,
+            message: 'Signed out successfully'
         });
-
     } catch (error) {
-        console.error('Error in completeProfile:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Error in signOut:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Internal server error' 
+        });
     }
 };
 
 module.exports = {
-    signIn,
-    verifyOTP,
-    signOut,
-    signUp,
-    completeProfile
-}; 
+    sendOTP,
+    verifyOTPSignIn,
+    verifyOTPSignUp,
+    signOut
+};
