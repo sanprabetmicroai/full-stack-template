@@ -64,6 +64,14 @@ function AuthProvider({ children }: AuthProviderProps) {
     const { token, setToken } = useToken()
     const [tokenState, setTokenState] = useState(token)
 
+    console.log('AuthProvider State:', {
+        signedIn,
+        hasUser: !!user?.id,
+        hasToken: !!token,
+        hasTokenState: !!tokenState,
+        authenticated: Boolean(tokenState && signedIn),
+    })
+
     const authenticated = Boolean(tokenState && signedIn)
 
     const navigatorRef = useRef<IsolatedNavigatorRef>(null)
@@ -79,6 +87,11 @@ function AuthProvider({ children }: AuthProviderProps) {
     }
 
     const handleSignIn = (tokens: Token, user?: User) => {
+        console.log('Handling sign in:', {
+            hasToken: !!tokens.accessToken,
+            hasUser: !!user,
+            tokenLength: tokens.accessToken.length,
+        })
         setToken(tokens.accessToken)
         setTokenState(tokens.accessToken)
         setSessionSignedIn(true)
@@ -89,6 +102,7 @@ function AuthProvider({ children }: AuthProviderProps) {
     }
 
     const handleSignOut = () => {
+        console.log('Handling sign out')
         setToken('')
         setUser({
             id: '',

@@ -58,18 +58,26 @@ export interface CompleteProfileResponse {
     }
 }
 
+export interface Timestamp {
+    _seconds: number
+    _nanoseconds: number
+}
+
 export interface User {
     id: string
     phoneNumber: string
     firstName?: string
     lastName?: string
     email?: string
-    createdAt: string
+    createdAt: Timestamp
     dateOfBirth?: string
     timeOfBirth?: string
     locationOfBirth?: string
     authority?: string
     profileImage?: string
+    lastSignIn?: Timestamp
+    isActive?: boolean
+    signInCount?: number
 }
 
 export interface Token {

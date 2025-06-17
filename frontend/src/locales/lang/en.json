@@ -41,8 +41,8 @@
         "email": "Email",
         "phone": "Phone Number",
         "theme_color": "Theme Color",
-        "emailSettings": "Email Settings",
-        "phoneSettings": "Phone Settings",
+        "emailSettings": "Update Email",
+        "phoneSettings": "Update Phone",
         "personalInfo": "Personal Information",
         "noPhone": "No phone number added",
         "updateInfo": "Update Information",
@@ -54,13 +54,16 @@
         "subtitle": "Manage your account settings and preferences",
         "appearance": "Appearance",
         "theme": "Theme",
+        "themeColor": "App Color",
+        "darkMode": "Dark Mode",
         "layout": "Layout",
         "layouts": {
             "collapsibleSide": "Collapsible Side",
             "stackedSide": "Stacked Side"
         },
         "notifications": "Notifications",
-        "notificationsDesc": "Manage your notification preferences"
+        "notificationsDesc": "Manage your notification preferences",
+        "darkModeDesc": "Switch between light and dark mode"
     },
     "notifications": {
         "title": "Notifications",
@@ -84,11 +87,16 @@
         "uploading": "Uploading...",
         "update": "Update",
         "updateEmail": "Update Email",
-        "updatePhone": "Update Phone"
+        "updatePhone": "Update Phone",
+        "profile": "Profile",
+        "notifications": "Notifications"
     },
     "theme": {
         "default": "Default",
         "dark": "Dark",
-        "light": "Light"
+        "light": "Light",
+        "green": "Green",
+        "purple": "Purple",
+        "orange": "Orange"
     }
 }

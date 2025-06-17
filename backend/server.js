@@ -4,6 +4,7 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
 const aiRoutes = require('./routes/aiRoutes');
+const userRoutes = require('./routes/userRoutes');
 const corsOptions = require('./config/cors');
 
 console.log('Starting server initialization...');
@@ -31,6 +32,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/users', userRoutes);
 
 // Add 404 handler
 app.use((req, res, next) => {
@@ -61,6 +63,8 @@ const server = app.listen(PORT, '0.0.0.0', () => {
     console.log('- POST /api/auth/signout');
     console.log('- POST /api/ai/gemini');
     console.log('- POST /api/ai/chatgpt');
+    console.log('- GET /api/users/:uid');
+    console.log('- PUT /api/users/:uid');
 });
 
 // Handle server errors

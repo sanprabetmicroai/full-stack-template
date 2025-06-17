@@ -8,6 +8,7 @@ import {
 } from '@/constants/theme.constant'
 import type { LayoutType } from '@/@types/theme'
 import type { SingleValue } from 'react-select'
+import ModeSwitcher from '@/components/template/ThemeConfigurator/ModeSwitcher'
 
 type ThemeOption = {
     value: string
@@ -39,15 +40,15 @@ const Settings = () => {
         },
     ]
 
-    const handleThemeChange = (newValue: SingleValue<ThemeOption>) => {
+    const handleThemeChange = (newValue: unknown) => {
         if (newValue) {
-            setSchema(newValue.value)
+            setSchema((newValue as ThemeOption).value)
         }
     }
 
-    const handleLayoutChange = (newValue: SingleValue<LayoutOption>) => {
+    const handleLayoutChange = (newValue: unknown) => {
         if (newValue) {
-            setLayout(newValue.value)
+            setLayout((newValue as LayoutOption).value)
         }
     }
 
@@ -92,6 +93,17 @@ const Settings = () => {
                                 )}
                                 onChange={handleLayoutChange}
                             />
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <label className="block text-sm font-medium mb-2">
+                                    {t('theme.dark')}
+                                </label>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    {t('settings.darkModeDesc')}
+                                </p>
+                            </div>
+                            <ModeSwitcher />
                         </div>
                     </div>
                 </Card>

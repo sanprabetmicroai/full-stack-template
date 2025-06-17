@@ -2,23 +2,24 @@ import React, { useState, useRef } from 'react'
 import { Card, Form, FormItem, Input, Button } from '@/components/ui'
 import { useAuth } from '@/auth'
 import { useTranslation } from 'react-i18next'
-import { uploadFile } from '@/configs/firebase.storage'
 import { FaCamera } from 'react-icons/fa'
 import dayjs from 'dayjs'
-import { apiGetCurrentUser } from '@/services/ProfileService'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+    apiGetUser,
+    apiUpdateUser,
+    apiUploadProfileImage,
+} from '@/services/UserService'
+import { toast } from 'react-toastify'
+import type { User } from '@/@types/auth'
 
 const MAX_FILE_SIZE_MB = 2
 const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024
 
-interface Timestamp {
-    _seconds: number
-    _nanoseconds: number
-}
-
 const Profile = () => {
     const { t } = useTranslation()
-    const { user, updateUser } = useAuth()
+    const { user } = useAuth()
+    const queryClient = useQueryClient()
     const [isEditing, setIsEditing] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
     const [isEditingEmail, setIsEditingEmail] = useState(false)
@@ -26,15 +27,43 @@ const Profile = () => {
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-    // Use React Query to fetch user data
-    const { data: userData, isLoading } = useQuery({
-        queryKey: ['user'],
-        queryFn: async () => {
-            const response = await apiGetCurrentUser()
-            if (!response.success) {
-                throw new Error('Failed to fetch user data')
-            }
-            return response.data
+    // Add console log for auth user
+    console.log('Auth User:', user)
+
+    // Fetch user data with React Query
+    const { data: userData, isLoading } = useQuery<User>({
+        queryKey: ['user', user?.id],
+        queryFn: () => apiGetUser(user?.id || ''),
+        enabled: !!user?.id,
+    })
+
+    // Add console log for fetched user data
+    console.log('Fetched User Data:', userData)
+
+    // Update user mutation
+    const updateUserMutation = useMutation({
+        mutationFn: (userData: Partial<User>) =>
+            apiUpdateUser(user?.id || '', userData),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['user', user?.id] })
+            toast.success(t('profile.updateSuccess'))
+        },
+        onError: (error) => {
+            toast.error(t('profile.updateError'))
+            console.error('Error updating profile:', error)
+        },
+    })
+
+    // Upload profile image mutation
+    const uploadImageMutation = useMutation({
+        mutationFn: (file: File) => apiUploadProfileImage(user?.id || '', file),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['user', user?.id] })
+            toast.success(t('profile.imageUpdateSuccess'))
+        },
+        onError: (error) => {
+            toast.error(t('profile.imageUpdateError'))
+            console.error('Error uploading profile picture:', error)
         },
     })
 
@@ -60,13 +89,10 @@ const Profile = () => {
 
     // Format creation date
     const formattedDate = userData?.createdAt
-        ? dayjs(
-              (userData.createdAt as unknown as Timestamp)._seconds * 1000,
-          ).format('MMMM D, YYYY')
+        ? dayjs(new Date(userData.createdAt._seconds * 1000)).format(
+              'MMMM D, YYYY',
+          )
         : ''
-
-    // Log user object
-    console.log('User object:', user)
 
     const handleImageUpload = async (
         e: React.ChangeEvent<HTMLInputElement>,
@@ -91,14 +117,8 @@ const Profile = () => {
             }
             try {
                 setIsUploading(true)
-                const fileExtension = file.name.split('.').pop()
-                const path = `ProfilePics/${user?.id}.${fileExtension}`
-                const downloadURL = await uploadFile(file, path)
-                await updateUser({
-                    profileImage: downloadURL,
-                })
+                await uploadImageMutation.mutateAsync(file)
             } catch (error) {
-                setErrorMsg('Error uploading profile picture.')
                 console.error('Error uploading profile picture:', error)
             } finally {
                 setIsUploading(false)
@@ -109,22 +129,20 @@ const Profile = () => {
     const handlePersonalInfoSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
-            await updateUser(formData)
+            await updateUserMutation.mutateAsync({
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+            })
             setIsEditing(false)
         } catch (error) {
             console.error('Error updating profile:', error)
         }
     }
 
-    const handleEditClick = () => {
-        console.log('Edit button clicked')
-        setIsEditing(true)
-    }
-
     const handleEmailUpdate = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
-            await updateUser({ email: formData.email })
+            await updateUserMutation.mutateAsync({ email: formData.email })
             setIsEditingEmail(false)
         } catch (error) {
             console.error('Error updating email:', error)
@@ -134,7 +152,9 @@ const Profile = () => {
     const handlePhoneUpdate = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
-            await updateUser({ phoneNumber: formData.phoneNumber })
+            await updateUserMutation.mutateAsync({
+                phoneNumber: formData.phoneNumber,
+            })
             setIsEditingPhone(false)
         } catch (error) {
             console.error('Error updating phone:', error)
@@ -160,11 +180,11 @@ const Profile = () => {
                 ) : (
                     <>
                         {/* Profile Picture Section */}
-                        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-                            <div className="flex items-start gap-8">
-                                <div className="flex flex-col items-center">
-                                    <div className="relative group w-32 h-32 mb-4">
-                                        <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border-4 border-gray-200 group-hover:border-blue-400 transition-all duration-200 cursor-pointer">
+                        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-4 sm:p-6 mb-6 sm:mb-8">
+                            <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-8 w-full">
+                                <div className="flex flex-col items-center w-full md:w-auto">
+                                    <div className="relative group w-24 h-24 sm:w-32 sm:h-32 mb-4">
+                                        <div className="w-full h-full rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden border-4 border-gray-200 dark:border-gray-700 group-hover:border-blue-400 transition-all duration-200 cursor-pointer">
                                             {userData?.profileImage ? (
                                                 <img
                                                     src={userData.profileImage}
@@ -178,7 +198,7 @@ const Profile = () => {
                                                     viewBox="0 0 24 24"
                                                     strokeWidth={1.5}
                                                     stroke="currentColor"
-                                                    className="w-16 h-16 text-gray-400"
+                                                    className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 dark:text-gray-500"
                                                 >
                                                     <path
                                                         strokeLinecap="round"
@@ -202,6 +222,7 @@ const Profile = () => {
                                     <Button
                                         variant="solid"
                                         size="sm"
+                                        className="w-full sm:w-auto"
                                         onClick={() =>
                                             fileInputRef.current?.click()
                                         }
@@ -217,14 +238,14 @@ const Profile = () => {
                                         </div>
                                     )}
                                 </div>
-                                <div className="flex-1">
-                                    <div className="space-y-6">
+                                <div className="flex-1 w-full">
+                                    <div className="space-y-4 sm:space-y-6">
                                         <div>
-                                            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">
                                                 {formData.firstName}{' '}
                                                 {formData.lastName}
                                             </h3>
-                                            <div className="flex items-center text-gray-600 mb-1">
+                                            <div className="flex items-center text-gray-600 dark:text-gray-300 mb-1 flex-wrap break-all">
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     className="h-5 w-5 mr-2"
@@ -241,7 +262,7 @@ const Profile = () => {
                                                 </svg>
                                                 {formData.email}
                                             </div>
-                                            <div className="flex items-center text-gray-600">
+                                            <div className="flex items-center text-gray-600 dark:text-gray-300 flex-wrap break-all">
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     className="h-5 w-5 mr-2"
@@ -260,8 +281,8 @@ const Profile = () => {
                                             </div>
                                         </div>
                                         {formattedDate && (
-                                            <div className="pt-4 border-t border-gray-100">
-                                                <div className="flex items-center text-gray-600">
+                                            <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+                                                <div className="flex items-center text-gray-600 dark:text-gray-300">
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         className="h-5 w-5 mr-2"
@@ -287,10 +308,10 @@ const Profile = () => {
                         </div>
 
                         {/* Contact Information Section */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
                             {/* Email Update Section */}
-                            <div className="bg-white rounded-lg shadow-sm p-6">
-                                <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-4 sm:p-6 w-full">
+                                <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
                                     {t('profile.emailSettings')}
                                 </h3>
                                 {isEditingEmail ? (
@@ -328,10 +349,10 @@ const Profile = () => {
                                 ) : (
                                     <div className="w-full">
                                         <div className="mb-4">
-                                            <div className="font-semibold text-gray-700 mb-1">
+                                            <div className="font-semibold text-gray-700 dark:text-gray-200 mb-1">
                                                 {t('profile.email')}
                                             </div>
-                                            <div className="bg-gray-50 rounded px-4 py-2 text-gray-600">
+                                            <div className="bg-gray-50 dark:bg-gray-800 rounded px-4 py-2 text-gray-600 dark:text-gray-300">
                                                 {formData.email}
                                             </div>
                                         </div>
@@ -351,8 +372,8 @@ const Profile = () => {
                             </div>
 
                             {/* Phone Update Section */}
-                            <div className="bg-white rounded-lg shadow-sm p-6">
-                                <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-4 sm:p-6 w-full">
+                                <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
                                     {t('profile.phoneSettings')}
                                 </h3>
                                 {isEditingPhone ? (
@@ -391,10 +412,10 @@ const Profile = () => {
                                 ) : (
                                     <div className="w-full">
                                         <div className="mb-4">
-                                            <div className="font-semibold text-gray-700 mb-1">
+                                            <div className="font-semibold text-gray-700 dark:text-gray-200 mb-1">
                                                 {t('profile.phone')}
                                             </div>
-                                            <div className="bg-gray-50 rounded px-4 py-2 text-gray-600">
+                                            <div className="bg-gray-50 dark:bg-gray-800 rounded px-4 py-2 text-gray-600 dark:text-gray-300">
                                                 {formData.phoneNumber ||
                                                     t('profile.noPhone')}
                                             </div>
@@ -416,12 +437,15 @@ const Profile = () => {
                         </div>
 
                         {/* Personal Information Section */}
-                        <div className="bg-white rounded-lg shadow-sm p-6">
-                            <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-4 sm:p-6 w-full">
+                            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
                                 {t('profile.personalInfo')}
                             </h3>
                             {isEditing ? (
-                                <Form onSubmit={handlePersonalInfoSubmit}>
+                                <Form
+                                    onSubmit={handlePersonalInfoSubmit}
+                                    className="w-full"
+                                >
                                     <FormItem label={t('profile.firstName')}>
                                         <Input
                                             value={formData.firstName}
@@ -444,17 +468,18 @@ const Profile = () => {
                                             }
                                         />
                                     </FormItem>
-                                    <div className="flex justify-end gap-2 mt-4">
+                                    <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4 w-full">
                                         <Button
                                             variant="plain"
                                             onClick={() => setIsEditing(false)}
+                                            className="w-full sm:w-auto"
                                         >
                                             {t('common.cancel')}
                                         </Button>
                                         <Button
                                             variant="solid"
                                             type="submit"
-                                            className=""
+                                            className="w-full sm:w-auto"
                                         >
                                             {t('common.save')}
                                         </Button>
@@ -463,26 +488,26 @@ const Profile = () => {
                             ) : (
                                 <div className="w-full">
                                     <div className="mb-4">
-                                        <div className="font-semibold text-gray-700 mb-1">
+                                        <div className="font-semibold text-gray-700 dark:text-gray-200 mb-1">
                                             {t('profile.firstName')}
                                         </div>
-                                        <div className="bg-gray-50 rounded px-4 py-2 text-gray-600">
+                                        <div className="bg-gray-50 dark:bg-gray-800 rounded px-4 py-2 text-gray-600 dark:text-gray-300">
                                             {formData.firstName}
                                         </div>
                                     </div>
                                     <div className="mb-4">
-                                        <div className="font-semibold text-gray-700 mb-1">
+                                        <div className="font-semibold text-gray-700 dark:text-gray-200 mb-1">
                                             {t('profile.lastName')}
                                         </div>
-                                        <div className="bg-gray-50 rounded px-4 py-2 text-gray-600">
+                                        <div className="bg-gray-50 dark:bg-gray-800 rounded px-4 py-2 text-gray-600 dark:text-gray-300">
                                             {formData.lastName}
                                         </div>
                                     </div>
                                     <div className="flex justify-end">
                                         <Button
                                             variant="solid"
-                                            onClick={handleEditClick}
-                                            className=""
+                                            onClick={() => setIsEditing(true)}
+                                            className="w-full sm:w-auto"
                                         >
                                             {t('profile.updateInfo')}
                                         </Button>

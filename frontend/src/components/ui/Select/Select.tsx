@@ -20,6 +20,7 @@ import type {
 import type { AsyncProps } from 'react-select/async'
 import type { CreatableProps } from 'react-select/creatable'
 import type { Ref, JSX } from 'react'
+import { forwardRef } from 'react'
 
 const DefaultDropdownIndicator = () => {
     return (
@@ -74,142 +75,154 @@ export type SelectProps<
         componentAs?: ReactSelect | CreatableSelect | AsyncSelect
     }
 
-function Select<
-    Option,
-    IsMulti extends boolean = false,
-    Group extends GroupBase<Option> = GroupBase<Option>,
->(props: SelectProps<Option, IsMulti, Group>) {
-    const {
-        components,
-        componentAs: Component = ReactSelect,
-        size,
-        styles,
-        className,
-        classNames,
-        field,
-        invalid,
-        ...rest
-    } = props
+const Select = forwardRef(
+    <
+        Option,
+        IsMulti extends boolean = false,
+        Group extends GroupBase<Option> = GroupBase<Option>,
+    >(
+        props: SelectProps<Option, IsMulti, Group>,
+        ref: Ref<any>,
+    ) => {
+        const {
+            components,
+            componentAs: Component = ReactSelect,
+            size,
+            styles,
+            className,
+            classNames,
+            field,
+            invalid,
+            ...rest
+        } = props
 
-    const { controlSize } = useConfig()
-    const formControlSize = useForm()?.size
-    const formItemInvalid = useFormItem()?.invalid
-    const inputGroupSize = useInputGroup()?.size
+        const { controlSize } = useConfig()
+        const formControlSize = useForm()?.size
+        const formItemInvalid = useFormItem()?.invalid
+        const inputGroupSize = useInputGroup()?.size
 
-    const selectSize = (size ||
-        inputGroupSize ||
-        formControlSize ||
-        controlSize) as keyof typeof CONTROL_SIZES
+        const selectSize = (size ||
+            inputGroupSize ||
+            formControlSize ||
+            controlSize) as keyof typeof CONTROL_SIZES
 
-    const isSelectInvalid = invalid || formItemInvalid
+        const isSelectInvalid = invalid || formItemInvalid
 
-    const selectClass = cn(`select select-${selectSize}`, className)
+        const selectClass = cn(`select select-${selectSize}`, className)
 
-    return (
-        <Component<Option, IsMulti, Group>
-            className={selectClass}
-            classNames={
-                {
-                    control: (state) =>
-                        cn(
-                            'select-control',
-                            CONTROL_SIZES[selectSize].minH,
-                            state.isDisabled && 'opacity-50 cursor-not-allowed',
-                            (() => {
-                                const classes: string[] = [
-                                    'bg-gray-100 dark:bg-gray-700',
-                                ]
+        return (
+            <Component<Option, IsMulti, Group>
+                className={selectClass}
+                classNames={
+                    {
+                        control: (state) =>
+                            cn(
+                                'select-control',
+                                CONTROL_SIZES[selectSize].minH,
+                                state.isDisabled &&
+                                    'opacity-50 cursor-not-allowed',
+                                (() => {
+                                    const classes: string[] = [
+                                        'bg-gray-100 dark:bg-gray-700',
+                                    ]
 
-                                const { isFocused } = state
+                                    const { isFocused } = state
 
-                                if (isFocused) {
-                                    classes.push(
-                                        'select-control-focused ring-1 ring-primary border-primary bg-transparent',
-                                    )
-                                }
+                                    if (isFocused) {
+                                        classes.push(
+                                            'select-control-focused ring-1 ring-primary border-primary bg-transparent',
+                                        )
+                                    }
 
-                                if (isSelectInvalid) {
-                                    classes.push(
-                                        'select-control-invalid bg-error-subtle',
-                                    )
-                                }
+                                    if (isSelectInvalid) {
+                                        classes.push(
+                                            'select-control-invalid bg-error-subtle',
+                                        )
+                                    }
 
-                                if (isFocused && isSelectInvalid) {
-                                    classes.push('ring-error border-error')
-                                }
+                                    if (isFocused && isSelectInvalid) {
+                                        classes.push('ring-error border-error')
+                                    }
 
-                                return classes
-                            })(),
-                        ),
-                    valueContainer: ({ isMulti, hasValue, selectProps }) =>
-                        cn(
-                            'select-value-container',
-                            isMulti &&
-                                hasValue &&
-                                selectProps.controlShouldRenderValue
-                                ? 'flex'
-                                : 'grid',
-                        ),
-                    input: ({ value, isDisabled }) =>
-                        cn(
-                            'select-input-container',
-                            isDisabled ? 'invisible' : 'visible',
-                            value && '[transform:translateZ(0)]',
-                        ),
-                    placeholder: () =>
-                        cn(
-                            'select-placeholder',
-                            isSelectInvalid ? 'text-error' : 'text-gray-400',
-                        ),
-                    indicatorsContainer: () => 'select-indicators-container',
-                    singleValue: () => 'select-single-value',
-                    multiValue: () => 'select-multi-value',
-                    multiValueLabel: () => 'select-multi-value-label',
-                    multiValueRemove: () => 'select-multi-value-remove',
-                    menu: () => 'select-menu',
-                    ...classNames,
-                } as ClassNamesConfig<Option, IsMulti, Group>
-            }
-            classNamePrefix={'select'}
-            styles={
-                {
-                    control: () => ({}),
-                    valueContainer: () => ({}),
-                    input: ({
-                        margin,
-                        paddingTop,
-                        paddingBottom,
-                        ...provided
-                    }) => ({ ...provided }),
-                    placeholder: () => ({}),
-                    singleValue: () => ({}),
-                    multiValue: () => ({}),
-                    multiValueLabel: () => ({}),
-                    multiValueRemove: () => ({}),
-                    menu: ({
-                        backgroundColor,
-                        marginTop,
-                        marginBottom,
-                        border,
-                        borderRadius,
-                        boxShadow,
-                        ...provided
-                    }) => ({ ...provided, zIndex: 50 }),
-                    ...styles,
-                } as StylesConfig<Option, IsMulti, Group>
-            }
-            components={{
-                IndicatorSeparator: () => null,
-                Option: DefaultOption,
-                LoadingIndicator: DefaultLoadingIndicator,
-                DropdownIndicator: DefaultDropdownIndicator,
-                ClearIndicator: DefaultClearIndicator,
-                ...components,
-            }}
-            {...field}
-            {...rest}
-        />
-    )
-}
+                                    return classes
+                                })(),
+                            ),
+                        valueContainer: ({ isMulti, hasValue, selectProps }) =>
+                            cn(
+                                'select-value-container',
+                                isMulti &&
+                                    hasValue &&
+                                    selectProps.controlShouldRenderValue
+                                    ? 'flex'
+                                    : 'grid',
+                            ),
+                        input: ({ value, isDisabled }) =>
+                            cn(
+                                'select-input-container',
+                                isDisabled ? 'invisible' : 'visible',
+                                value && '[transform:translateZ(0)]',
+                            ),
+                        placeholder: () =>
+                            cn(
+                                'select-placeholder',
+                                isSelectInvalid
+                                    ? 'text-error'
+                                    : 'text-gray-400',
+                            ),
+                        indicatorsContainer: () =>
+                            'select-indicators-container',
+                        singleValue: () => 'select-single-value',
+                        multiValue: () => 'select-multi-value',
+                        multiValueLabel: () => 'select-multi-value-label',
+                        multiValueRemove: () => 'select-multi-value-remove',
+                        menu: () => 'select-menu',
+                        ...classNames,
+                    } as ClassNamesConfig<Option, IsMulti, Group>
+                }
+                classNamePrefix={'select'}
+                styles={
+                    {
+                        control: () => ({}),
+                        valueContainer: () => ({}),
+                        input: ({
+                            margin,
+                            paddingTop,
+                            paddingBottom,
+                            ...provided
+                        }) => ({ ...provided }),
+                        placeholder: () => ({}),
+                        singleValue: () => ({}),
+                        multiValue: () => ({}),
+                        multiValueLabel: () => ({}),
+                        multiValueRemove: () => ({}),
+                        menu: ({
+                            backgroundColor,
+                            marginTop,
+                            marginBottom,
+                            border,
+                            borderRadius,
+                            boxShadow,
+                            ...provided
+                        }) => ({ ...provided, zIndex: 50 }),
+                        ...styles,
+                    } as StylesConfig<Option, IsMulti, Group>
+                }
+                components={{
+                    IndicatorSeparator: () => null,
+                    Option: DefaultOption,
+                    LoadingIndicator: DefaultLoadingIndicator,
+                    DropdownIndicator: DefaultDropdownIndicator,
+                    ClearIndicator: DefaultClearIndicator,
+                    ...components,
+                }}
+                {...field}
+                {...rest}
+                ref={ref}
+            />
+        )
+    },
+)
+
+Select.displayName = 'Select'
 
 export default Select

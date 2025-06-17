@@ -2,16 +2,34 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/auth'
 import PageContainer from '@/components/template/PageContainer'
 import { Card } from '@/components/ui'
+import { useQuery } from '@tanstack/react-query'
+import { apiGetUser } from '@/services/UserService'
 
 const Main = () => {
     const { t } = useTranslation()
     const { user } = useAuth()
 
+    const { data: userData, isLoading } = useQuery({
+        queryKey: ['user', user?.id],
+        queryFn: () => apiGetUser(user?.id || ''),
+        enabled: !!user?.id,
+    })
+
+    if (isLoading) {
+        return (
+            <PageContainer>
+                <div className="flex justify-center items-center h-64">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                </div>
+            </PageContainer>
+        )
+    }
+
     return (
         <PageContainer>
             <div className="max-w-4xl mx-auto p-6">
                 <h1 className="text-2xl font-bold mb-6">
-                    {t('main.welcome', { name: user?.firstName })}
+                    {t('main.welcome', { name: userData?.firstName })}
                 </h1>
 
                 <Card className="mb-6">
@@ -25,14 +43,16 @@ const Main = () => {
                                     {t('main.birthDetails')}
                                 </h3>
                                 <p>
-                                    {t('main.dateOfBirth')}: {user?.dateOfBirth}
+                                    {t('main.dateOfBirth')}:{' '}
+                                    {userData?.dateOfBirth}
                                 </p>
                                 <p>
-                                    {t('main.timeOfBirth')}: {user?.timeOfBirth}
+                                    {t('main.timeOfBirth')}:{' '}
+                                    {userData?.timeOfBirth}
                                 </p>
                                 <p>
                                     {t('main.locationOfBirth')}:{' '}
-                                    {user?.locationOfBirth}
+                                    {userData?.locationOfBirth}
                                 </p>
                             </div>
                             <div>

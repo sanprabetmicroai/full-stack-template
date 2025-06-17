@@ -1,4 +1,4 @@
-import { BrowserRouter } from 'react-router'
+import { BrowserRouter } from 'react-router-dom'
 import Theme from '@/components/template/Theme'
 import Layout from '@/components/layouts'
 import { AuthProvider } from '@/auth'
@@ -9,17 +9,17 @@ const queryClient = new QueryClient()
 
 function App() {
     return (
-        <QueryClientProvider client={queryClient}>
-            <Theme>
-                <BrowserRouter>
+        <BrowserRouter>
+            <QueryClientProvider client={queryClient}>
+                <Theme>
                     <AuthProvider>
                         <Layout>
                             <Views />
                         </Layout>
                     </AuthProvider>
-                </BrowserRouter>
-            </Theme>
-        </QueryClientProvider>
+                </Theme>
+            </QueryClientProvider>
+        </BrowserRouter>
     )
 }
 

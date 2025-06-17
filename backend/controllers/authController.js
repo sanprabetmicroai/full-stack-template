@@ -161,7 +161,7 @@ const sendOTP = async (req, res) => {
         }
 
         const otp = generateOTP();
-        console.log('Generated OTP:', { phoneNumber, otpLength: otp.length });
+        console.log('Generated OTP:', { phoneNumber, otp });
         
         try {
             await storeOTP(phoneNumber, otp);
@@ -169,6 +169,19 @@ const sendOTP = async (req, res) => {
         } catch (dbError) {
             console.error('Failed to store OTP in database:', dbError);
             throw dbError;
+        }
+
+        // In development mode, just log the OTP instead of sending SMS
+        if (process.env.NODE_ENV === 'development') {
+            console.log('DEVELOPMENT MODE: OTP for', phoneNumber, 'is:', otp);
+            return res.status(200).json({
+                success: true,
+                message: 'Verification code sent successfully (development mode)',
+                data: { 
+                    phoneNumber,
+                    otp // Only include OTP in development mode
+                }
+            });
         }
 
         const smsResult = await sendSMS(phoneNumber, otp);
@@ -211,27 +224,46 @@ const verifyOTPSignIn = async (req, res) => {
     try {
         const { phoneNumber, otp } = req.body;
         
-        console.log('Verify OTP Sign In request:', { phoneNumber, otp });
+        console.log('Verify OTP Sign In request received:', { 
+            phoneNumber, 
+            otp,
+            headers: req.headers,
+            ip: req.ip,
+            timestamp: new Date().toISOString()
+        });
 
         if (!phoneNumber || !otp) {
+            console.log('Verify OTP Sign In validation failed:', { 
+                hasPhoneNumber: !!phoneNumber, 
+                hasOTP: !!otp 
+            });
             return res.status(400).json({ 
                 success: false, 
                 message: 'Phone number and verification code are required' 
             });
         }
 
+        console.log('Verifying stored OTP...');
         const otpResult = await verifyStoredOTP(phoneNumber, otp);
+        console.log('OTP verification result:', otpResult);
         
         if (!otpResult.valid) {
+            console.log('OTP verification failed:', otpResult.error);
             return res.status(400).json({ 
                 success: false, 
                 message: otpResult.error 
             });
         }
 
+        console.log('Checking if user exists...');
         const userResult = await checkUserExists(phoneNumber);
+        console.log('User check result:', { 
+            exists: userResult.exists,
+            userId: userResult.user?.id
+        });
         
         if (!userResult.exists) {
+            console.log('User not found for phone number:', phoneNumber);
             return res.status(404).json({ 
                 success: false, 
                 message: 'No account found with this phone number. Please sign up first.' 
@@ -239,6 +271,7 @@ const verifyOTPSignIn = async (req, res) => {
         }
 
         const user = userResult.user;
+        console.log('Updating user sign-in data...');
 
         const usersRef = db.collection('users');
         await usersRef.doc(user.id).update({
@@ -247,8 +280,13 @@ const verifyOTPSignIn = async (req, res) => {
         });
 
         const token = generateJWTToken(user.id, user.phoneNumber);
+        console.log('JWT token generated successfully');
 
-        console.log('Sign in successful:', { userId: user.id, phoneNumber });
+        console.log('Sign in successful:', { 
+            userId: user.id, 
+            phoneNumber,
+            timestamp: new Date().toISOString()
+        });
 
         res.status(200).json({
             success: true,
@@ -267,7 +305,11 @@ const verifyOTPSignIn = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error in verifyOTPSignIn:', error);
+        console.error('Error in verifyOTPSignIn:', {
+            error: error.message,
+            stack: error.stack,
+            timestamp: new Date().toISOString()
+        });
         res.status(500).json({ 
             success: false, 
             message: 'Internal server error' 

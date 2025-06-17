@@ -6,6 +6,7 @@ import {
     useCallback,
     cloneElement,
     createRef,
+    forwardRef,
 } from 'react'
 import classNames from 'classnames'
 import chainedFunction from '../utils/chainedFunction'
@@ -96,113 +97,119 @@ export interface ToastWrapperProps extends ToastProps {
     wrapper?: HTMLElement | (() => HTMLElement)
 }
 
-const ToastWrapper = (props: ToastWrapperProps) => {
-    const rootRef = useRef<HTMLDivElement | null>(null)
+const ToastWrapper = forwardRef<ToastWrapperInstance, ToastWrapperProps>(
+    (props, ref) => {
+        const rootRef = useRef<HTMLDivElement | null>(null)
 
-    const {
-        transitionType = 'scale',
-        placement = PLACEMENT.TOP_END as NotificationPlacement,
-        offsetX = 30,
-        offsetY = 30,
-        messageKey,
-        block = false,
-        ref,
-        callback,
-        ...rest
-    } = props
+        const {
+            transitionType = 'scale',
+            placement = PLACEMENT.TOP_END as NotificationPlacement,
+            offsetX = 30,
+            offsetY = 30,
+            messageKey,
+            block = false,
+            callback,
+            ...rest
+        } = props
 
-    const { push, removeAll, remove, messages } = useMessages(messageKey)
+        const { push, removeAll, remove, messages } = useMessages(messageKey)
 
-    useImperativeHandle(ref, () => {
-        return { root: rootRef.current, push, removeAll, remove }
-    })
+        useImperativeHandle(ref, () => {
+            return { root: rootRef.current, push, removeAll, remove }
+        })
 
-    const placementTransition = getPlacementTransition({
-        offsetX,
-        offsetY,
-        placement: placement as NotificationPlacement,
-        transitionType,
-    })
+        const placementTransition = getPlacementTransition({
+            offsetX,
+            offsetY,
+            placement: placement as NotificationPlacement,
+            transitionType,
+        })
 
-    const toastProps = {
-        triggerByToast: true,
-        ...rest,
-    }
+        const toastProps = {
+            triggerByToast: true,
+            ...rest,
+        }
 
-    const messageElements = messages.map((item) => {
+        const messageElements = messages.map((item) => {
+            return (
+                <motion.div
+                    key={item.key}
+                    className={'toast-wrapper'}
+                    initial={placementTransition.variants.initial}
+                    variants={placementTransition.variants}
+                    animate={item.visible ? 'animate' : 'exit'}
+                    transition={{ duration: 0.15, type: 'tween' }}
+                >
+                    {cloneElement(
+                        item.node as DetailedReactHTMLElement<any, HTMLElement>,
+                        {
+                            ...toastProps,
+                            ref,
+                            onClose: chainedFunction(
+                                item.node?.props?.onClose,
+                                () => remove(item.key),
+                            ),
+                            className: classNames(item.node?.props?.className),
+                        },
+                    )}
+                </motion.div>
+            )
+        })
+
         return (
-            <motion.div
-                key={item.key}
-                className={'toast-wrapper'}
-                initial={placementTransition.variants.initial}
-                variants={placementTransition.variants}
-                animate={item.visible ? 'animate' : 'exit'}
-                transition={{ duration: 0.15, type: 'tween' }}
-            >
-                {cloneElement(
-                    item.node as DetailedReactHTMLElement<any, HTMLElement>,
-                    {
-                        ...toastProps,
-                        ref,
-                        onClose: chainedFunction(
-                            item.node?.props?.onClose,
-                            () => remove(item.key),
-                        ),
-                        className: classNames(item.node?.props?.className),
-                    },
-                )}
-            </motion.div>
-        )
-    })
-
-    return (
-        <div
-            style={placementTransition.default}
-            {...rest}
-            ref={(thisRef) => {
-                rootRef.current = thisRef
-                callback?.(thisRef)
-            }}
-            className={classNames('toast', block && 'w-full')}
-        >
-            {messageElements}
-        </div>
-    )
-}
-
-ToastWrapper.getInstance = (props: ToastWrapperProps) => {
-    const { wrapper, ...rest } = props
-
-    const wrapperRef = createRef<ToastWrapperInstance>()
-
-    const wrapperElement =
-        (typeof wrapper === 'function' ? wrapper() : wrapper) || document.body
-
-    return new Promise((resolve) => {
-        const renderCallback = () => {
-            resolve([wrapperRef, unmount])
-        }
-
-        function renderElement(element: ReactNode) {
-            const mountElement = document.createElement('div')
-
-            wrapperElement.appendChild(mountElement)
-
-            const root = createRoot(mountElement)
-
-            root.render(element)
-
-            return root
-        }
-
-        const { unmount } = renderElement(
-            <ToastWrapper
+            <div
+                style={placementTransition.default}
                 {...rest}
-                ref={wrapperRef}
-                callback={renderCallback}
-            />,
+                ref={(thisRef) => {
+                    rootRef.current = thisRef
+                    callback?.(thisRef)
+                }}
+                className={classNames('toast', block && 'w-full')}
+            >
+                {messageElements}
+            </div>
         )
-    })
-}
+    },
+)
 
-export default ToastWrapper
+ToastWrapper.displayName = 'ToastWrapper'
+
+const ToastWrapperWithStatic = Object.assign(ToastWrapper, {
+    getInstance: (props: ToastWrapperProps) => {
+        const { wrapper, ...rest } = props
+
+        const wrapperRef = createRef<ToastWrapperInstance>()
+
+        const wrapperElement =
+            (typeof wrapper === 'function' ? wrapper() : wrapper) ||
+            document.body
+
+        return new Promise((resolve) => {
+            const renderCallback = () => {
+                resolve([wrapperRef, unmount])
+            }
+
+            function renderElement(element: ReactNode) {
+                const mountElement = document.createElement('div')
+
+                wrapperElement.appendChild(mountElement)
+
+                const root = createRoot(mountElement)
+
+                root.render(element)
+
+                return root
+            }
+
+            const { unmount } = renderElement(
+                <ToastWrapper
+                    {...rest}
+                    ref={wrapperRef}
+                    callback={renderCallback}
+                />,
+            )
+        })
+    },
+})
+
+export default ToastWrapperWithStatic

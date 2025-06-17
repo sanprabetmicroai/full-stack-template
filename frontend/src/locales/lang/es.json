@@ -41,8 +41,8 @@
         "email": "Correo electrónico",
         "phone": "Número de Teléfono",
         "theme_color": "Color del Tema",
-        "emailSettings": "Configuración de Correo",
-        "phoneSettings": "Configuración de Teléfono",
+        "emailSettings": "Actualizar Correo",
+        "phoneSettings": "Actualizar Teléfono",
         "personalInfo": "Información Personal",
         "noPhone": "Sin número de teléfono",
         "updateInfo": "Actualizar Información",
@@ -54,6 +54,8 @@
         "subtitle": "Administra la configuración y preferencias de tu cuenta",
         "appearance": "Apariencia",
         "theme": "Tema",
+        "themeColor": "Color del app",
+        "darkMode": "Modo Oscuro",
         "layout": "Diseño",
         "layouts": {
             "collapsibleSide": "Barra Lateral Colapsable",
@@ -84,7 +86,9 @@
         "uploading": "Subiendo...",
         "update": "Actualizar",
         "updateEmail": "Actualizar Correo",
-        "updatePhone": "Actualizar Teléfono"
+        "updatePhone": "Actualizar Teléfono",
+        "profile": "Perfil",
+        "notifications": "Notificaciones"
     },
     "theme": {
         "default": "Predeterminado",

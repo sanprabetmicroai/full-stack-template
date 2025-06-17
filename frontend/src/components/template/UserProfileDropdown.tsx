@@ -6,12 +6,20 @@ import { Link } from 'react-router-dom'
 import {
     PiUserDuotone,
     PiSignOutDuotone,
-    PiGearDuotone,
     PiBellDuotone,
+    PiSunDuotone,
+    PiMoonDuotone,
+    PiPaletteDuotone,
 } from 'react-icons/pi'
 import { useAuth } from '@/auth'
 import { useLocaleStore } from '@/store/localeStore'
 import { useTranslation } from 'react-i18next'
+import { useThemeStore } from '@/store/themeStore'
+import useDarkMode from '@/utils/hooks/useDarkMode'
+import Switcher from '@/components/ui/Switcher'
+import classNames from '@/utils/classNames'
+import { TbCheck } from 'react-icons/tb'
+import presetThemeSchemaConfig from '@/configs/preset-theme-schema.config'
 import type { JSX } from 'react'
 
 type DropdownList = {
@@ -26,24 +34,6 @@ const languageList = [
     { label: 'Português', value: 'pt', flag: 'PT' },
 ]
 
-const dropdownItemList: DropdownList[] = [
-    {
-        label: 'Profile',
-        path: '/profile',
-        icon: <PiUserDuotone />,
-    },
-    {
-        label: 'Settings',
-        path: '/settings',
-        icon: <PiGearDuotone />,
-    },
-    {
-        label: 'Notifications',
-        path: '/notifications',
-        icon: <PiBellDuotone />,
-    },
-]
-
 const _UserDropdown = () => {
     const { firstName, lastName, phoneNumber, profileImage } = useSessionUser(
         (state) => state.user,
@@ -51,6 +41,21 @@ const _UserDropdown = () => {
     const { signOut } = useAuth()
     const { currentLang: locale, setLang } = useLocaleStore((state) => state)
     const { t } = useTranslation()
+    const [isDark, setIsDark] = useDarkMode()
+    const { themeSchema, setSchema } = useThemeStore((state) => state)
+
+    const dropdownItemList: DropdownList[] = [
+        {
+            label: t('common.profile'),
+            path: '/profile',
+            icon: <PiUserDuotone />,
+        },
+        {
+            label: t('common.notifications'),
+            path: '/notifications',
+            icon: <PiBellDuotone />,
+        },
+    ]
 
     const handleSignOut = () => {
         signOut()
@@ -103,6 +108,66 @@ const _UserDropdown = () => {
                     </Link>
                 </Dropdown.Item>
             ))}
+            <Dropdown.Item variant="divider" />
+            <Dropdown.Item variant="header">
+                <span className="text-sm font-semibold">
+                    {t('settings.theme')}
+                </span>
+            </Dropdown.Item>
+            <Dropdown.Item className="px-2">
+                <div className="flex items-center justify-between w-full">
+                    <span className="flex items-center gap-2">
+                        <span className="text-xl">
+                            {isDark ? <PiMoonDuotone /> : <PiSunDuotone />}
+                        </span>
+                        <span>{t('settings.darkMode')}</span>
+                    </span>
+                    <Switcher
+                        defaultChecked={isDark}
+                        onChange={(checked) =>
+                            setIsDark(checked ? 'dark' : 'light')
+                        }
+                    />
+                </div>
+            </Dropdown.Item>
+            <Dropdown.Item variant="header">
+                <span className="text-sm font-semibold">
+                    {t('settings.themeColor')}
+                </span>
+            </Dropdown.Item>
+            <Dropdown.Item className="px-2">
+                <div className="flex items-center gap-2">
+                    <span className="text-xl">
+                        <PiPaletteDuotone />
+                    </span>
+                    <div className="inline-flex items-center gap-2">
+                        {Object.entries(presetThemeSchemaConfig).map(
+                            ([key, value]) => (
+                                <button
+                                    key={key}
+                                    className={classNames(
+                                        'h-6 w-6 rounded-full flex items-center justify-center border-2 border-white',
+                                        themeSchema === key &&
+                                            'ring-2 ring-primary',
+                                    )}
+                                    style={{
+                                        backgroundColor:
+                                            value[isDark ? 'dark' : 'light']
+                                                .primary || '',
+                                    }}
+                                    onClick={() => setSchema(key)}
+                                >
+                                    {themeSchema === key ? (
+                                        <TbCheck className="text-neutral text-sm" />
+                                    ) : (
+                                        <></>
+                                    )}
+                                </button>
+                            ),
+                        )}
+                    </div>
+                </div>
+            </Dropdown.Item>
             <Dropdown.Item variant="divider" />
             <Dropdown.Item variant="header">
                 <span className="text-sm font-semibold">
