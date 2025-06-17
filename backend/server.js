@@ -25,6 +25,18 @@ app.use((req, res, next) => {
     next();
 });
 
+// Add route matching logging
+app.use((req, res, next) => {
+    console.log('Route matching:', {
+        method: req.method,
+        url: req.url,
+        baseUrl: req.baseUrl,
+        originalUrl: req.originalUrl,
+        path: req.path
+    });
+    next();
+});
+
 // Basic health check endpoint
 app.get('/', (req, res) => {
     res.json({ status: 'healthy', timestamp: new Date().toISOString() });
@@ -36,7 +48,13 @@ app.use('/api/users', userRoutes);
 
 // Add 404 handler
 app.use((req, res, next) => {
-    console.log('404 Not Found:', req.method, req.url);
+    console.log('404 Not Found:', {
+        method: req.method,
+        url: req.url,
+        baseUrl: req.baseUrl,
+        originalUrl: req.originalUrl,
+        path: req.path
+    });
     res.status(404).json({ error: `Cannot ${req.method} ${req.url}` });
 });
 
@@ -65,6 +83,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
     console.log('- POST /api/ai/chatgpt');
     console.log('- GET /api/users/:uid');
     console.log('- PUT /api/users/:uid');
+    console.log('- PUT /api/users/:uid/profile-image');
 });
 
 // Handle server errors

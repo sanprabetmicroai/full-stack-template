@@ -9,6 +9,7 @@ import appConfig from '@/configs/app.config'
 import { useThemeStore } from '@/store/themeStore'
 import { useRouteKeyStore } from '@/store/routeKeyStore'
 import { useSessionUser } from '@/store/authStore'
+import useTranslation from '@/utils/hooks/useTranslation'
 
 const VerticalMenuContent = lazy(
     () => import('@/components/template/VerticalMenuContent'),
@@ -31,6 +32,8 @@ const MobileNav = ({
 }: MobileNavProps) => {
     const [isOpen, setIsOpen] = useState(false)
 
+    const { t } = useTranslation(!translationSetup)
+
     const handleOpenDrawer = () => {
         setIsOpen(true)
     }
@@ -42,7 +45,8 @@ const MobileNav = ({
     const direction = useThemeStore((state) => state.direction)
     const currentRouteKey = useRouteKeyStore((state) => state.currentRouteKey)
 
-    const userAuthority = useSessionUser((state) => state.user.authority)
+    const userAuthorityRaw = useSessionUser((state) => state.user.authority)
+    const userAuthority = userAuthorityRaw ? [userAuthorityRaw] : []
 
     return (
         <>
@@ -50,7 +54,7 @@ const MobileNav = ({
                 <MobileNavToggle toggled={isOpen} />
             </div>
             <Drawer
-                title="Navigation"
+                title={t('nav.navigation', 'Navigation')}
                 isOpen={isOpen}
                 bodyClass={classNames('p-0')}
                 width={330}
@@ -64,7 +68,7 @@ const MobileNav = ({
                             collapsed={false}
                             navigationTree={navigationConfig}
                             routeKey={currentRouteKey}
-                            userAuthority={userAuthority as string[]}
+                            userAuthority={userAuthority}
                             direction={direction}
                             translationSetup={translationSetup}
                             onMenuItemClick={handleDrawerClose}

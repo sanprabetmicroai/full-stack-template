@@ -15,16 +15,6 @@ const profileRoute: Routes = [
         },
     },
     {
-        key: 'settings',
-        path: '/settings',
-        component: lazy(() => import('@/views/profile/Settings')),
-        authority: [USER],
-        meta: {
-            pageContainerType: 'contained',
-            layout: LAYOUT_COLLAPSIBLE_SIDE,
-        },
-    },
-    {
         key: 'notifications',
         path: '/notifications',
         component: lazy(() => import('@/views/notifications/Notifications')),

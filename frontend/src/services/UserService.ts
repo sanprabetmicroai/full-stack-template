@@ -1,5 +1,6 @@
 import { api } from '@/configs/api.config'
 import type { User } from '@/@types/auth'
+import { uploadFile } from '@/configs/firebase.storage'
 
 export class UserServiceError extends Error {
     constructor(
@@ -76,20 +77,21 @@ export const apiUploadProfileImage = async (userId: string, file: File): Promise
         fileType: file.type
     })
     
-    const formData = new FormData()
-    formData.append('image', file)
-    
     try {
-        const response = await api.post(`/api/users/${userId}/profile-image`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        })
+        // Upload to Firebase Storage
+        const path = `profile-images/${userId}/${file.name}`
+        const imageUrl = await uploadFile(file, path)
+        
+        // Update user profile with new image URL using the new endpoint
+        const response = await api.put(`/api/users/${userId}/profile-image`, { imageUrl })
+        
         console.log('Profile image uploaded successfully:', {
             userId,
-            imageUrl: response.data.imageUrl
+            imageUrl,
+            updatedUser: response.data
         })
-        return response.data
+        
+        return { imageUrl }
     } catch (error: any) {
         console.error('Failed to upload profile image:', {
             userId,

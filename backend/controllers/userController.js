@@ -120,7 +120,61 @@ const updateUserInfo = async (req, res) => {
     }
 };
 
+// Update user profile image
+const updateProfileImage = async (req, res) => {
+    try {
+        const { uid } = req.params;
+        const { imageUrl } = req.body;
+
+        if (!uid) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'User ID is required' 
+            });
+        }
+
+        if (!imageUrl) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Image URL is required' 
+            });
+        }
+
+        // Check if the requesting user is trying to update their own data
+        if (req.user.userId !== uid) {
+            return res.status(403).json({ 
+                success: false,
+                message: 'You are not authorized to update this user\'s information' 
+            });
+        }
+
+        await db.collection('users').doc(uid).update({
+            profileImage: imageUrl,
+            updatedAt: new Date()
+        });
+
+        // Get updated user data
+        const updatedUser = await db.collection('users').doc(uid).get();
+
+        res.json({
+            success: true,
+            message: 'Profile image updated successfully',
+            data: {
+                id: updatedUser.id,
+                ...updatedUser.data()
+            }
+        });
+    } catch (error) {
+        console.error('Error updating profile image:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Failed to update profile image' 
+        });
+    }
+};
+
 module.exports = {
     getUserInfo,
-    updateUserInfo
+    updateUserInfo,
+    updateProfileImage
 }; 

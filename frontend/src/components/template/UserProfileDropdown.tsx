@@ -21,6 +21,9 @@ import classNames from '@/utils/classNames'
 import { TbCheck } from 'react-icons/tb'
 import presetThemeSchemaConfig from '@/configs/preset-theme-schema.config'
 import type { JSX } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { apiGetUser } from '@/services/UserService'
+import type { User } from '@/@types/auth'
 
 type DropdownList = {
     label: string
@@ -34,15 +37,32 @@ const languageList = [
     { label: 'Português', value: 'pt', flag: 'PT' },
 ]
 
+const LoadingAvatar = () => (
+    <div className="animate-pulse">
+        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+    </div>
+)
+
+const LoadingText = () => (
+    <div className="animate-pulse">
+        <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+    </div>
+)
+
 const _UserDropdown = () => {
-    const { firstName, lastName, phoneNumber, profileImage } = useSessionUser(
-        (state) => state.user,
-    )
+    const { user } = useAuth()
     const { signOut } = useAuth()
     const { currentLang: locale, setLang } = useLocaleStore((state) => state)
     const { t } = useTranslation()
     const [isDark, setIsDark] = useDarkMode()
     const { themeSchema, setSchema } = useThemeStore((state) => state)
+
+    // Use the same query key as Profile.tsx
+    const { data: userData, isLoading } = useQuery<User>({
+        queryKey: ['user', user?.id],
+        queryFn: () => apiGetUser(user?.id || ''),
+        enabled: !!user?.id,
+    })
 
     const dropdownItemList: DropdownList[] = [
         {
@@ -63,11 +83,12 @@ const _UserDropdown = () => {
 
     const avatarProps = {
         icon: <PiUserDuotone />,
-        src: profileImage,
+        src: userData?.profileImage,
     }
 
-    const displayName =
-        firstName && lastName ? `${firstName} ${lastName}` : 'Anonymous'
+    const displayName = userData
+        ? `${userData.firstName || ''} ${userData.lastName || ''}`
+        : 'Loading...'
 
     return (
         <Dropdown
@@ -75,20 +96,33 @@ const _UserDropdown = () => {
             toggleClassName="flex items-center"
             renderTitle={
                 <div className="cursor-pointer flex items-center">
-                    <Avatar size={32} {...avatarProps} />
+                    {isLoading ? (
+                        <LoadingAvatar />
+                    ) : (
+                        <Avatar size={32} {...avatarProps} />
+                    )}
                 </div>
             }
             placement="bottom-end"
         >
             <Dropdown.Item variant="header">
                 <div className="py-2 px-3 flex items-center gap-3">
-                    <Avatar {...avatarProps} />
+                    {isLoading ? (
+                        <LoadingAvatar />
+                    ) : (
+                        <Avatar {...avatarProps} />
+                    )}
                     <div>
                         <div className="font-bold text-gray-900 dark:text-gray-100">
-                            {displayName}
+                            {isLoading ? <LoadingText /> : displayName}
                         </div>
                         <div className="text-xs">
-                            {phoneNumber || 'No phone number available'}
+                            {isLoading ? (
+                                <LoadingText />
+                            ) : (
+                                userData?.phoneNumber ||
+                                'No phone number available'
+                            )}
                         </div>
                     </div>
                 </div>

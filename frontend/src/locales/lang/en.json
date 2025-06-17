@@ -20,7 +20,8 @@
         "profile.dashboard": "Dashboard",
         "profile.profile": "Profile",
         "profile.settings": "Settings",
-        "profile.notifications": "Notifications"
+        "profile.notifications": "Notifications",
+        "navigation": "Navigation"
     },
     "dashboard": {
         "welcome": "Welcome, {{name}}!",

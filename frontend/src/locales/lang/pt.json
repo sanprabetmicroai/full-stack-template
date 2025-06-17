@@ -20,7 +20,8 @@
         "profile.dashboard": "Painel",
         "profile.profile": "Perfil",
         "profile.settings": "Configurações",
-        "profile.notifications": "Notificações"
+        "profile.notifications": "Notificações",
+        "navigation": "Navegação"
     },
     "dashboard": {
         "welcome": "Bem-vindo, {{name}}!",

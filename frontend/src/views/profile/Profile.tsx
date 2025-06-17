@@ -101,27 +101,18 @@ const Profile = () => {
         const file = e.target.files?.[0]
         if (!file) return
 
-        // File size check
-        if (file.size > MAX_FILE_SIZE) {
-            setErrorMsg(`File size must be less than ${MAX_FILE_SIZE_MB}MB.`)
-            return
-        }
-
-        // Aspect ratio check
-        const img = new window.Image()
-        img.src = URL.createObjectURL(file)
-        img.onload = async () => {
-            if (img.width !== img.height) {
-                setErrorMsg('Image must be square (1:1 ratio).')
-                return
-            }
-            try {
-                setIsUploading(true)
-                await uploadImageMutation.mutateAsync(file)
-            } catch (error) {
-                console.error('Error uploading profile picture:', error)
-            } finally {
-                setIsUploading(false)
+        try {
+            setIsUploading(true)
+            const result = await uploadImageMutation.mutateAsync(file)
+            console.log('Image upload result:', result)
+        } catch (error: any) {
+            console.error('Error uploading profile picture:', error)
+            setErrorMsg(error.message || 'Failed to upload profile picture')
+        } finally {
+            setIsUploading(false)
+            // Clear the file input
+            if (fileInputRef.current) {
+                fileInputRef.current.value = ''
             }
         }
     }
