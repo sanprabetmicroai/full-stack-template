@@ -30,7 +30,7 @@ gcloud run deploy $SERVICE_NAME \
   --region $REGION \
   --allow-unauthenticated \
   --set-env-vars="NODE_ENV=production" \
-  --set-secrets="FIREBASE_PROJECT_ID=firebase-project-id:latest,FIREBASE_PRIVATE_KEY_ID=firebase-private-key-id:latest,FIREBASE_PRIVATE_KEY=firebase-private-key:latest,FIREBASE_CLIENT_EMAIL=firebase-client-email:latest,FIREBASE_CLIENT_ID=firebase-client-id:latest,FIREBASE_CLIENT_CERT_URL=firebase-client-cert-url:latest,TWILIO_ACCOUNT_SID=twilio-account-sid:latest,TWILIO_AUTH_TOKEN=twilio-auth-token:latest,TWILIO_PHONE_NUMBER=twilio-phone-number:latest,JWT_SECRET=jwt-secret:latest,GEMINI_API_KEY=gemini-api-key:latest,OPENAI_API_KEY=openai-api-key:latest" \
+  --set-secrets="FIREBASE_PROJECT_ID=firebase-project-id:latest,FIREBASE_PRIVATE_KEY_ID=firebase-private-key-id:latest,FIREBASE_PRIVATE_KEY=firebase-private-key:latest,FIREBASE_CLIENT_EMAIL=firebase-client-email:latest,FIREBASE_CLIENT_ID=firebase-client-id:latest,FIREBASE_CLIENT_CERT_URL=firebase-client-cert-url:latest,TWILIO_ACCOUNT_SID=twilio-account-sid:latest,TWILIO_AUTH_TOKEN=twilio-auth-token:latest,TWILIO_PHONE_NUMBER=twilio-phone-number:latest,JWT_SECRET=jwt-secret:latest,GEMINI_API_KEY=gemini-api-key:latest,OPENAI_API_KEY=openai-api-key:latest,SENDGRID_API_KEY=sendgrid-api-key:latest,SENDGRID_FROM_EMAIL=sendgrid-from-email:latest" \
   --timeout=300 \
   --cpu=1 \
   --memory=512Mi \

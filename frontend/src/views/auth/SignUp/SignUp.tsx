@@ -11,43 +11,45 @@ import Input from '@/components/ui/Input'
 import PhoneInput from '@/components/shared/PhoneInput'
 import Logo from '@/components/template/Logo'
 import Alert from '@/components/ui/Alert'
-
-const validationSchema = z.object({
-    firstName: z
-        .string()
-        .min(1, { message: 'Please enter your first name' })
-        .max(50, { message: 'First name is too long' }),
-    lastName: z
-        .string()
-        .min(1, { message: 'Please enter your last name' })
-        .max(50, { message: 'Last name is too long' }),
-    email: z
-        .string()
-        .min(1, { message: 'Please enter your email' })
-        .email({ message: 'Please enter a valid email' }),
-    dialCode: z.string().min(1, { message: 'Please select a country code' }),
-    phoneNumber: z
-        .string()
-        .min(1, { message: 'Please enter your phone number' })
-        .regex(/^[0-9]+$/, {
-            message: 'Please enter a valid phone number',
-        }),
-})
-
-type SignUpFormSchema = z.infer<typeof validationSchema>
+import { useTranslation } from 'react-i18next'
 
 const SignUp = () => {
     const [isSubmitting, setSubmitting] = useState<boolean>(false)
     const [error, setError] = useState<string>('')
+    const { t } = useTranslation()
 
     const { sendOTP } = useAuth()
     const navigate = useNavigate()
+
+    const validationSchema = z.object({
+        firstName: z
+            .string()
+            .min(1, { message: t('auth.validation.firstNameRequired') })
+            .max(50, { message: t('auth.validation.firstNameTooLong') }),
+        lastName: z
+            .string()
+            .min(1, { message: t('auth.validation.lastNameRequired') })
+            .max(50, { message: t('auth.validation.lastNameTooLong') }),
+        email: z
+            .string()
+            .min(1, { message: t('auth.validation.emailRequired') })
+            .email({ message: t('auth.validation.emailInvalid') }),
+        dialCode: z
+            .string()
+            .min(1, { message: t('auth.validation.countryCodeRequired') }),
+        phoneNumber: z
+            .string()
+            .min(1, { message: t('auth.validation.phoneRequired') })
+            .regex(/^[0-9]+$/, {
+                message: t('auth.validation.phoneInvalid'),
+            }),
+    })
 
     const {
         handleSubmit,
         formState: { errors },
         control,
-    } = useForm<SignUpFormSchema>({
+    } = useForm({
         defaultValues: {
             firstName: '',
             lastName: '',
@@ -58,14 +60,18 @@ const SignUp = () => {
         resolver: zodResolver(validationSchema),
     })
 
-    const onSubmit = async (data: SignUpFormSchema) => {
+    const onSubmit = async (data: any) => {
         setSubmitting(true)
         setError('')
 
         try {
             const fullPhoneNumber = data.dialCode + data.phoneNumber
             console.log('SignUp: Sending OTP for:', fullPhoneNumber)
-            const result = await sendOTP({ phoneNumber: fullPhoneNumber })
+            const result = await sendOTP({
+                identifier: fullPhoneNumber,
+                identifierType: 'phone',
+                tag: 'signup',
+            })
 
             if (result?.status === 'success') {
                 console.log(
@@ -90,7 +96,7 @@ const SignUp = () => {
             }
         } catch (error) {
             console.error('SignUp: Unexpected error:', error)
-            setError('An unexpected error occurred')
+            setError(t('auth.signIn.unexpectedError'))
         } finally {
             setSubmitting(false)
         }
@@ -102,9 +108,9 @@ const SignUp = () => {
                 <Logo type="streamline" imgClass="mx-auto" logoWidth={60} />
             </div>
             <div className="mb-10">
-                <h2 className="mb-2">Create Account</h2>
+                <h2 className="mb-2">{t('auth.signUp.title')}</h2>
                 <p className="font-semibold heading-text">
-                    Please fill in your details to get started!
+                    {t('auth.signUp.subtitle')}
                 </p>
             </div>
 
@@ -117,7 +123,7 @@ const SignUp = () => {
             <div>
                 <Form onSubmit={handleSubmit(onSubmit)}>
                     <FormItem
-                        label="First Name"
+                        label={t('auth.signUp.firstName')}
                         invalid={Boolean(errors.firstName)}
                         errorMessage={errors.firstName?.message}
                     >
@@ -127,7 +133,9 @@ const SignUp = () => {
                             render={({ field }) => (
                                 <Input
                                     type="text"
-                                    placeholder="Enter your first name"
+                                    placeholder={t(
+                                        'auth.signUp.firstNamePlaceholder',
+                                    )}
                                     {...field}
                                 />
                             )}
@@ -135,7 +143,7 @@ const SignUp = () => {
                     </FormItem>
 
                     <FormItem
-                        label="Last Name"
+                        label={t('auth.signUp.lastName')}
                         invalid={Boolean(errors.lastName)}
                         errorMessage={errors.lastName?.message}
                     >
@@ -145,7 +153,9 @@ const SignUp = () => {
                             render={({ field }) => (
                                 <Input
                                     type="text"
-                                    placeholder="Enter your last name"
+                                    placeholder={t(
+                                        'auth.signUp.lastNamePlaceholder',
+                                    )}
                                     {...field}
                                 />
                             )}
@@ -153,7 +163,7 @@ const SignUp = () => {
                     </FormItem>
 
                     <FormItem
-                        label="Email"
+                        label={t('auth.signUp.email')}
                         invalid={Boolean(errors.email)}
                         errorMessage={errors.email?.message}
                     >
@@ -163,7 +173,9 @@ const SignUp = () => {
                             render={({ field }) => (
                                 <Input
                                     type="email"
-                                    placeholder="Enter your email"
+                                    placeholder={t(
+                                        'auth.signUp.emailPlaceholder',
+                                    )}
                                     {...field}
                                 />
                             )}
@@ -173,7 +185,7 @@ const SignUp = () => {
                     <PhoneInput
                         control={control}
                         errors={errors}
-                        placeholder="Enter your phone number"
+                        placeholder={t('auth.signUp.phonePlaceholder')}
                     />
 
                     <Button
@@ -183,14 +195,14 @@ const SignUp = () => {
                         type="submit"
                         disabled={isSubmitting}
                     >
-                        Continue
+                        {t('auth.signUp.continue')}
                     </Button>
                 </Form>
 
                 <div className="mt-4 text-center">
-                    <span>Already have an account? </span>
+                    <span>{t('auth.signUp.hasAccount')} </span>
                     <Link to="/sign-in" className="text-primary-500">
-                        Sign In
+                        {t('auth.signUp.signIn')}
                     </Link>
                 </div>
             </div>

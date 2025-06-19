@@ -23,6 +23,68 @@
         "profile.notifications": "Notificaciones",
         "navigation": "Navegación"
     },
+    "auth": {
+        "signIn": {
+            "title": "¡Bienvenido!",
+            "subtitle": "¡Por favor ingresa tu número de teléfono para iniciar sesión!",
+            "phonePlaceholder": "Ingresa tu número de teléfono",
+            "continue": "Continuar",
+            "noAccount": "¿No tienes una cuenta?",
+            "signUp": "Registrarse",
+            "otpSent": "OTP enviado exitosamente",
+            "otpError": "Error al enviar OTP",
+            "unexpectedError": "Ocurrió un error inesperado"
+        },
+        "signUp": {
+            "title": "Crear Cuenta",
+            "subtitle": "¡Por favor completa tus datos para comenzar!",
+            "firstName": "Nombre",
+            "firstNamePlaceholder": "Ingresa tu nombre",
+            "lastName": "Apellido",
+            "lastNamePlaceholder": "Ingresa tu apellido",
+            "email": "Correo electrónico",
+            "emailPlaceholder": "Ingresa tu correo electrónico",
+            "phonePlaceholder": "Ingresa tu número de teléfono",
+            "continue": "Continuar",
+            "hasAccount": "¿Ya tienes una cuenta?",
+            "signIn": "Iniciar Sesión"
+        },
+        "verifyOTP": {
+            "title": "Verificar Número de Teléfono",
+            "subtitle": "Hemos enviado un código de verificación de 6 dígitos a",
+            "otpPlaceholder": "Ingresa código de 6 dígitos",
+            "verify": "Verificar",
+            "resend": "Reenviar Código",
+            "resendIn": "Reenviar en {{seconds}} segundos",
+            "invalidAccess": "Acceso Inválido",
+            "invalidAccessMessage": "Por favor, inicia el proceso de autenticación desde el principio.",
+            "goToSignIn": "Ir a Iniciar Sesión",
+            "verificationSent": "Código de verificación enviado exitosamente",
+            "resendError": "Error al reenviar código de verificación"
+        },
+        "verifyEmail": {
+            "verifying": "Verificando tu correo electrónico...",
+            "invalidToken": "Token de verificación inválido o expirado",
+            "error": "Error al verificar correo electrónico",
+            "errorTitle": "Verificación Fallida",
+            "successTitle": "¡Correo Verificado!",
+            "successMessage": "Tu correo electrónico ha sido verificado exitosamente. Ahora puedes iniciar sesión en tu cuenta.",
+            "login": "Ir a Login"
+        },
+        "validation": {
+            "firstNameRequired": "Por favor ingresa tu nombre",
+            "firstNameTooLong": "El nombre es demasiado largo",
+            "lastNameRequired": "Por favor ingresa tu apellido",
+            "lastNameTooLong": "El apellido es demasiado largo",
+            "emailRequired": "Por favor ingresa tu correo electrónico",
+            "emailInvalid": "Por favor ingresa un correo electrónico válido",
+            "countryCodeRequired": "Por favor selecciona un código de país",
+            "phoneRequired": "Por favor ingresa tu número de teléfono",
+            "phoneInvalid": "Por favor ingresa un número de teléfono válido",
+            "otpRequired": "OTP debe ser de 6 dígitos",
+            "otpInvalid": "OTP debe ser de 6 dígitos"
+        }
+    },
     "dashboard": {
         "welcome": "¡Bienvenido, {{name}}!",
         "subtitle": "Aquí está un resumen de tu cuenta",
@@ -48,7 +110,26 @@
         "noPhone": "Sin número de teléfono",
         "updateInfo": "Actualizar Información",
         "memberSince": "Miembro desde",
-        "uploadPicture": "Subir Foto"
+        "uploadPicture": "Subir Foto",
+        "updateSuccess": "Perfil actualizado exitosamente",
+        "updateError": "Error al actualizar el perfil",
+        "imageUpdateSuccess": "Foto de perfil actualizada exitosamente",
+        "imageUpdateError": "Error al actualizar la foto de perfil",
+        "updateContact": "Actualizar {{type}}",
+        "currentValue": "{{type}} actual",
+        "newValue": "Nuevo {{type}}",
+        "enterNewValue": "Por favor ingresa un nuevo valor",
+        "enterNewEmail": "Ingresa nueva dirección de correo",
+        "enterNewPhone": "Ingresa nuevo número de teléfono",
+        "sendOTP": "Enviar OTP",
+        "enterOTP": "Ingresa OTP",
+        "otpPlaceholder": "Ingresa código de 6 dígitos",
+        "otpSent": "OTP enviado exitosamente",
+        "otpRequestError": "Error al enviar OTP",
+        "otpVerificationError": "Error al verificar OTP",
+        "otpSentTo": "OTP enviado a tu {{type}}: {{value}}",
+        "verifyAndUpdate": "Verificar y Actualizar",
+        "noValue": "No establecido"
     },
     "settings": {
         "title": "Configuración",
@@ -81,6 +162,7 @@
         "edit": "Editar",
         "save": "Guardar",
         "cancel": "Cancelar",
+        "back": "Atrás",
         "signOut": "Cerrar Sesión",
         "language": "Idioma",
         "upload": "Subir",
@@ -89,11 +171,19 @@
         "updateEmail": "Actualizar Correo",
         "updatePhone": "Actualizar Teléfono",
         "profile": "Perfil",
-        "notifications": "Notificaciones"
+        "notifications": "Notificaciones",
+        "confirm": "Confirmar"
     },
     "theme": {
         "default": "Predeterminado",
         "dark": "Oscuro",
         "light": "Claro"
+    },
+    "signOut": {
+        "title": "Comentarios de cierre de sesión",
+        "rating": "¿Cómo calificarías tu experiencia?",
+        "feedback": "Comentarios adicionales",
+        "feedbackPlaceholder": "Cuéntanos cómo podemos mejorar",
+        "feedbackMinLength": "El comentario debe tener al menos 8 caracteres."
     }
 }

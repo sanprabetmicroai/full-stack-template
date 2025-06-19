@@ -23,6 +23,68 @@
         "profile.notifications": "Notifications",
         "navigation": "Navigation"
     },
+    "auth": {
+        "signIn": {
+            "title": "Welcome!",
+            "subtitle": "Please enter your phone number to sign in!",
+            "phonePlaceholder": "Enter your phone number",
+            "continue": "Continue",
+            "noAccount": "Don't have an account?",
+            "signUp": "Sign Up",
+            "otpSent": "OTP sent successfully",
+            "otpError": "Failed to send OTP",
+            "unexpectedError": "An unexpected error occurred"
+        },
+        "signUp": {
+            "title": "Create Account",
+            "subtitle": "Please fill in your details to get started!",
+            "firstName": "First Name",
+            "firstNamePlaceholder": "Enter your first name",
+            "lastName": "Last Name",
+            "lastNamePlaceholder": "Enter your last name",
+            "email": "Email",
+            "emailPlaceholder": "Enter your email",
+            "phonePlaceholder": "Enter your phone number",
+            "continue": "Continue",
+            "hasAccount": "Already have an account?",
+            "signIn": "Sign In"
+        },
+        "verifyOTP": {
+            "title": "Verify Phone Number",
+            "subtitle": "We've sent a 6-digit verification code to",
+            "otpPlaceholder": "Enter 6-digit code",
+            "verify": "Verify",
+            "resend": "Resend Code",
+            "resendIn": "Resend in {{seconds}} seconds",
+            "invalidAccess": "Invalid Access",
+            "invalidAccessMessage": "Please start the authentication process from the beginning.",
+            "goToSignIn": "Go to Sign In",
+            "verificationSent": "Verification code sent successfully",
+            "resendError": "Failed to resend verification code"
+        },
+        "verifyEmail": {
+            "verifying": "Verifying your email...",
+            "invalidToken": "Invalid or expired verification token",
+            "error": "Failed to verify email",
+            "errorTitle": "Verification Failed",
+            "successTitle": "Email Verified!",
+            "successMessage": "Your email has been successfully verified. You can now sign in to your account.",
+            "login": "Go to Login"
+        },
+        "validation": {
+            "firstNameRequired": "Please enter your first name",
+            "firstNameTooLong": "First name is too long",
+            "lastNameRequired": "Please enter your last name",
+            "lastNameTooLong": "Last name is too long",
+            "emailRequired": "Please enter your email",
+            "emailInvalid": "Please enter a valid email",
+            "countryCodeRequired": "Please select a country code",
+            "phoneRequired": "Please enter your phone number",
+            "phoneInvalid": "Please enter a valid phone number",
+            "otpRequired": "OTP must be 6 digits",
+            "otpInvalid": "OTP must be 6 digits"
+        }
+    },
     "dashboard": {
         "welcome": "Welcome, {{name}}!",
         "subtitle": "Here's an overview of your account",
@@ -48,7 +110,32 @@
         "noPhone": "No phone number added",
         "updateInfo": "Update Information",
         "memberSince": "Member since",
-        "uploadPicture": "Upload Picture"
+        "uploadPicture": "Upload Picture",
+        "updateSuccess": "Profile updated successfully",
+        "updateError": "Failed to update profile",
+        "imageUpdateSuccess": "Profile picture updated successfully",
+        "imageUpdateError": "Failed to update profile picture",
+        "updateContact": "Update {{type}}",
+        "currentValue": "Current {{type}}",
+        "newValue": "New {{type}}",
+        "enterNewValue": "Please enter a new value",
+        "enterNewEmail": "Enter new email address",
+        "enterNewPhone": "Enter new phone number",
+        "enterDifferentValue": "Please enter a different {{type}}",
+        "sendOTP": "Send OTP",
+        "resendOTP": "Resend OTP",
+        "resendIn": "Resend in {{seconds}} seconds",
+        "otpResent": "OTP resent successfully",
+        "otpResendError": "Failed to resend OTP",
+        "sameValueError": "New {{type}} must be different from current {{type}}",
+        "enterOTP": "Enter OTP",
+        "otpPlaceholder": "Enter 6-digit code",
+        "otpSent": "OTP sent successfully",
+        "otpRequestError": "Failed to send OTP",
+        "otpVerificationError": "Failed to verify OTP",
+        "otpSentTo": "OTP sent to your {{type}}: {{value}}",
+        "verifyAndUpdate": "Verify & Update",
+        "noValue": "Not set"
     },
     "settings": {
         "title": "Settings",
@@ -82,6 +169,7 @@
         "edit": "Edit",
         "save": "Save",
         "cancel": "Cancel",
+        "back": "Back",
         "signOut": "Sign Out",
         "language": "Language",
         "upload": "Upload",
@@ -90,7 +178,8 @@
         "updateEmail": "Update Email",
         "updatePhone": "Update Phone",
         "profile": "Profile",
-        "notifications": "Notifications"
+        "notifications": "Notifications",
+        "confirm": "Confirm"
     },
     "theme": {
         "default": "Default",
@@ -99,5 +188,12 @@
         "green": "Green",
         "purple": "Purple",
         "orange": "Orange"
+    },
+    "signOut": {
+        "title": "Sign Out Feedback",
+        "rating": "How would you rate your experience?",
+        "feedback": "Additional feedback",
+        "feedbackPlaceholder": "Let us know how we can improve",
+        "feedbackMinLength": "Feedback must be at least 8 characters long."
     }
 }

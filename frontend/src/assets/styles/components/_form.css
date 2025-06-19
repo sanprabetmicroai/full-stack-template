@@ -24,7 +24,7 @@
   }
   
   .form-explain {
-    @apply text-error absolute font-semibold;
+    @apply text-error font-semibold mt-2 block;
   }
   
   .form-container {

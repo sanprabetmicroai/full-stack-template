@@ -46,7 +46,8 @@ export const apiVerifySignIn = async (
 ): Promise<VerifyOTPResponse> => {
     try {
         console.log('AuthService: Verifying sign-in with data:', { 
-            phoneNumber: data.phoneNumber,
+            identifier: data.identifier,
+            identifierType: data.identifierType,
             otpLength: data.otp.length 
         })
         const response = await api.post<VerifyOTPResponse>(
@@ -97,16 +98,34 @@ export const apiVerifySignUp = async (
 }
 
 // Sign out
-export const apiSignOut = async (): Promise<SignOutResponse> => {
+export const apiSignOut = async (feedback?: { rating: number; feedback: string }): Promise<SignOutResponse> => {
     try {
-        const response = await api.post<SignOutResponse>('/api/auth/signout')
-        clearAuthToken()
-        return response.data
-    } catch (error) {
-        console.error('Sign out failed:', error)
+        console.log('AuthService: Starting sign out process:', {
+            hasFeedback: !!feedback,
+            feedbackData: feedback,
+            hasToken: !!localStorage.getItem('token')
+        });
+
+        const response = await api.post<SignOutResponse>('/api/auth/signout', feedback);
+        const responseData = response.data;
+        
+        console.log('AuthService: Sign out response:', {
+            success: responseData.success,
+            message: responseData.message
+        });
+
+        clearAuthToken();
+        return responseData;
+    } catch (error: any) {
+        console.error('AuthService: Sign out failed:', {
+            error: error.message,
+            response: error.response?.data,
+            status: error.response?.status,
+            headers: error.config?.headers
+        });
         // Clear token even if the request fails
-        clearAuthToken()
-        throw error
+        clearAuthToken();
+        throw error;
     }
 }
 
@@ -145,4 +164,43 @@ export const isAuthenticated = (): boolean => {
 // Get stored token
 export const getAuthToken = (): string | null => {
     return localStorage.getItem('token')
+}
+
+// Request OTP for updating email or phone
+export const apiRequestUpdateOTP = async (
+    data: { type: 'email' | 'phone'; value: string }
+): Promise<{ success: boolean; message: string; data?: any }> => {
+    try {
+        const response = await api.post('/api/auth/request-update-otp', data)
+        return response.data
+    } catch (error) {
+        console.error('Request update OTP failed:', error)
+        throw error
+    }
+}
+
+// Verify OTP and update email/phone
+export const apiVerifyUpdateOTP = async (
+    data: { type: 'email' | 'phone'; value: string; otp: string }
+): Promise<{ success: boolean; message: string; data?: any }> => {
+    try {
+        const response = await api.post('/api/auth/verify-update-otp', data)
+        return response.data
+    } catch (error) {
+        console.error('Verify update OTP failed:', error)
+        throw error
+    }
+}
+
+// Check resend status for OTP
+export const apiCheckResendStatus = async (
+    data: { identifier: string; identifierType: 'email' | 'phone'; tag: string }
+): Promise<{ success: boolean; data: { allowed: boolean; timeRemaining: number } }> => {
+    try {
+        const response = await api.post('/api/auth/check-resend-status', data)
+        return response.data
+    } catch (error) {
+        console.error('Check resend status failed:', error)
+        throw error
+    }
 }

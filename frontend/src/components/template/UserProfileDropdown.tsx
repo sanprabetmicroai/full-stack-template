@@ -24,6 +24,8 @@ import type { JSX } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { apiGetUser } from '@/services/UserService'
 import type { User } from '@/@types/auth'
+import SignOutModal from '@/components/shared/SignOutModal'
+import { useState } from 'react'
 
 type DropdownList = {
     label: string
@@ -56,6 +58,7 @@ const _UserDropdown = () => {
     const { t } = useTranslation()
     const [isDark, setIsDark] = useDarkMode()
     const { themeSchema, setSchema } = useThemeStore((state) => state)
+    const [showSignOutModal, setShowSignOutModal] = useState(false)
 
     // Use the same query key as Profile.tsx
     const { data: userData, isLoading } = useQuery<User>({
@@ -78,7 +81,16 @@ const _UserDropdown = () => {
     ]
 
     const handleSignOut = () => {
-        signOut()
+        setShowSignOutModal(true)
+    }
+
+    const handleSignOutConfirm = async (rating: number, feedback: string) => {
+        try {
+            await signOut({ rating, feedback })
+            setShowSignOutModal(false)
+        } catch (error) {
+            console.error('Error during sign out:', error)
+        }
     }
 
     const avatarProps = {
@@ -91,155 +103,168 @@ const _UserDropdown = () => {
         : 'Loading...'
 
     return (
-        <Dropdown
-            className="flex"
-            toggleClassName="flex items-center"
-            renderTitle={
-                <div className="cursor-pointer flex items-center">
-                    {isLoading ? (
-                        <LoadingAvatar />
-                    ) : (
-                        <Avatar size={32} {...avatarProps} />
-                    )}
-                </div>
-            }
-            placement="bottom-end"
-        >
-            <Dropdown.Item variant="header">
-                <div className="py-2 px-3 flex items-center gap-3">
-                    {isLoading ? (
-                        <LoadingAvatar />
-                    ) : (
-                        <Avatar {...avatarProps} />
-                    )}
-                    <div>
-                        <div className="font-bold text-gray-900 dark:text-gray-100">
-                            {isLoading ? <LoadingText /> : displayName}
+        <>
+            <Dropdown
+                className="flex"
+                toggleClassName="flex items-center"
+                renderTitle={
+                    <div className="cursor-pointer flex items-center">
+                        {isLoading ? (
+                            <LoadingAvatar />
+                        ) : (
+                            <Avatar size={32} {...avatarProps} />
+                        )}
+                    </div>
+                }
+                placement="bottom-end"
+            >
+                <Dropdown.Item variant="header">
+                    <div className="py-2 px-3 flex items-center gap-3">
+                        {isLoading ? (
+                            <LoadingAvatar />
+                        ) : (
+                            <Avatar {...avatarProps} />
+                        )}
+                        <div>
+                            <div className="font-bold text-gray-900 dark:text-gray-100">
+                                {isLoading ? <LoadingText /> : displayName}
+                            </div>
+                            <div className="text-xs">
+                                {isLoading ? (
+                                    <LoadingText />
+                                ) : (
+                                    userData?.phoneNumber ||
+                                    'No phone number available'
+                                )}
+                            </div>
                         </div>
-                        <div className="text-xs">
-                            {isLoading ? (
-                                <LoadingText />
-                            ) : (
-                                userData?.phoneNumber ||
-                                'No phone number available'
+                    </div>
+                </Dropdown.Item>
+                <Dropdown.Item variant="divider" />
+                {dropdownItemList.map((item) => (
+                    <Dropdown.Item
+                        key={item.label}
+                        eventKey={item.label}
+                        className="px-0"
+                    >
+                        <Link
+                            className="flex h-full w-full px-2"
+                            to={item.path}
+                        >
+                            <span className="flex gap-2 items-center w-full">
+                                <span className="text-xl">{item.icon}</span>
+                                <span>{item.label}</span>
+                            </span>
+                        </Link>
+                    </Dropdown.Item>
+                ))}
+                <Dropdown.Item variant="divider" />
+                <Dropdown.Item variant="header">
+                    <span className="text-sm font-semibold">
+                        {t('settings.theme')}
+                    </span>
+                </Dropdown.Item>
+                <Dropdown.Item className="px-2">
+                    <div className="flex items-center justify-between w-full">
+                        <span className="flex items-center gap-2">
+                            <span className="text-xl">
+                                {isDark ? <PiMoonDuotone /> : <PiSunDuotone />}
+                            </span>
+                            <span>{t('settings.darkMode')}</span>
+                        </span>
+                        <Switcher
+                            defaultChecked={isDark}
+                            onChange={(checked) =>
+                                setIsDark(checked ? 'dark' : 'light')
+                            }
+                        />
+                    </div>
+                </Dropdown.Item>
+                <Dropdown.Item variant="header">
+                    <span className="text-sm font-semibold">
+                        {t('settings.themeColor')}
+                    </span>
+                </Dropdown.Item>
+                <Dropdown.Item className="px-2">
+                    <div className="flex items-center gap-2">
+                        <span className="text-xl">
+                            <PiPaletteDuotone />
+                        </span>
+                        <div className="inline-flex items-center gap-2">
+                            {Object.entries(presetThemeSchemaConfig).map(
+                                ([key, value]) => (
+                                    <button
+                                        key={key}
+                                        className={classNames(
+                                            'h-6 w-6 rounded-full flex items-center justify-center border-2 border-white',
+                                            themeSchema === key &&
+                                                'ring-2 ring-primary',
+                                        )}
+                                        style={{
+                                            backgroundColor:
+                                                value[isDark ? 'dark' : 'light']
+                                                    .primary || '',
+                                        }}
+                                        onClick={() => setSchema(key)}
+                                    >
+                                        {themeSchema === key ? (
+                                            <TbCheck className="text-neutral text-sm" />
+                                        ) : (
+                                            <></>
+                                        )}
+                                    </button>
+                                ),
                             )}
                         </div>
                     </div>
-                </div>
-            </Dropdown.Item>
-            <Dropdown.Item variant="divider" />
-            {dropdownItemList.map((item) => (
-                <Dropdown.Item
-                    key={item.label}
-                    eventKey={item.label}
-                    className="px-0"
-                >
-                    <Link className="flex h-full w-full px-2" to={item.path}>
-                        <span className="flex gap-2 items-center w-full">
-                            <span className="text-xl">{item.icon}</span>
-                            <span>{item.label}</span>
-                        </span>
-                    </Link>
                 </Dropdown.Item>
-            ))}
-            <Dropdown.Item variant="divider" />
-            <Dropdown.Item variant="header">
-                <span className="text-sm font-semibold">
-                    {t('settings.theme')}
-                </span>
-            </Dropdown.Item>
-            <Dropdown.Item className="px-2">
-                <div className="flex items-center justify-between w-full">
-                    <span className="flex items-center gap-2">
-                        <span className="text-xl">
-                            {isDark ? <PiMoonDuotone /> : <PiSunDuotone />}
+                <Dropdown.Item variant="divider" />
+                <Dropdown.Item variant="header">
+                    <span className="text-sm font-semibold">
+                        {t('common.language')}
+                    </span>
+                </Dropdown.Item>
+                {languageList.map((lang) => (
+                    <Dropdown.Item
+                        key={lang.label}
+                        className="justify-between px-2"
+                        eventKey={lang.label}
+                        onClick={() => setLang(lang.value)}
+                    >
+                        <span className="flex items-center">
+                            <Avatar
+                                size={18}
+                                shape="circle"
+                                src={`/img/countries/${lang.flag}.png`}
+                            />
+                            <span className="ltr:ml-2 rtl:mr-2">
+                                {lang.label}
+                            </span>
                         </span>
-                        <span>{t('settings.darkMode')}</span>
-                    </span>
-                    <Switcher
-                        defaultChecked={isDark}
-                        onChange={(checked) =>
-                            setIsDark(checked ? 'dark' : 'light')
-                        }
-                    />
-                </div>
-            </Dropdown.Item>
-            <Dropdown.Item variant="header">
-                <span className="text-sm font-semibold">
-                    {t('settings.themeColor')}
-                </span>
-            </Dropdown.Item>
-            <Dropdown.Item className="px-2">
-                <div className="flex items-center gap-2">
-                    <span className="text-xl">
-                        <PiPaletteDuotone />
-                    </span>
-                    <div className="inline-flex items-center gap-2">
-                        {Object.entries(presetThemeSchemaConfig).map(
-                            ([key, value]) => (
-                                <button
-                                    key={key}
-                                    className={classNames(
-                                        'h-6 w-6 rounded-full flex items-center justify-center border-2 border-white',
-                                        themeSchema === key &&
-                                            'ring-2 ring-primary',
-                                    )}
-                                    style={{
-                                        backgroundColor:
-                                            value[isDark ? 'dark' : 'light']
-                                                .primary || '',
-                                    }}
-                                    onClick={() => setSchema(key)}
-                                >
-                                    {themeSchema === key ? (
-                                        <TbCheck className="text-neutral text-sm" />
-                                    ) : (
-                                        <></>
-                                    )}
-                                </button>
-                            ),
+                        {locale === lang.value && (
+                            <span className="text-emerald-500 text-lg">✓</span>
                         )}
-                    </div>
-                </div>
-            </Dropdown.Item>
-            <Dropdown.Item variant="divider" />
-            <Dropdown.Item variant="header">
-                <span className="text-sm font-semibold">
-                    {t('common.language')}
-                </span>
-            </Dropdown.Item>
-            {languageList.map((lang) => (
+                    </Dropdown.Item>
+                ))}
+                <Dropdown.Item variant="divider" />
                 <Dropdown.Item
-                    key={lang.label}
-                    className="justify-between px-2"
-                    eventKey={lang.label}
-                    onClick={() => setLang(lang.value)}
+                    eventKey="Sign Out"
+                    className="gap-2"
+                    onClick={handleSignOut}
                 >
-                    <span className="flex items-center">
-                        <Avatar
-                            size={18}
-                            shape="circle"
-                            src={`/img/countries/${lang.flag}.png`}
-                        />
-                        <span className="ltr:ml-2 rtl:mr-2">{lang.label}</span>
+                    <span className="text-xl">
+                        <PiSignOutDuotone />
                     </span>
-                    {locale === lang.value && (
-                        <span className="text-emerald-500 text-lg">✓</span>
-                    )}
+                    <span>{t('common.signOut')}</span>
                 </Dropdown.Item>
-            ))}
-            <Dropdown.Item variant="divider" />
-            <Dropdown.Item
-                eventKey="Sign Out"
-                className="gap-2"
-                onClick={handleSignOut}
-            >
-                <span className="text-xl">
-                    <PiSignOutDuotone />
-                </span>
-                <span>{t('common.signOut')}</span>
-            </Dropdown.Item>
-        </Dropdown>
+            </Dropdown>
+
+            <SignOutModal
+                isOpen={showSignOutModal}
+                onClose={() => setShowSignOutModal(false)}
+                onConfirm={handleSignOutConfirm}
+            />
+        </>
     )
 }
 

@@ -9,36 +9,38 @@ import Button from '@/components/ui/Button'
 import { Form } from '@/components/ui/Form'
 import PhoneInput from '@/components/shared/PhoneInput'
 import type { CommonProps } from '@/@types/common'
+import { useTranslation } from 'react-i18next'
 
 interface SignInFormProps extends CommonProps {
     disableSubmit?: boolean
     setMessage: (message: string, isError?: boolean) => void
 }
 
-const validationSchema = z.object({
-    dialCode: z.string().min(1, { message: 'Please select a country code' }),
-    phoneNumber: z
-        .string()
-        .min(1, { message: 'Please enter your phone number' })
-        .regex(/^[0-9]+$/, {
-            message: 'Please enter a valid phone number',
-        }),
-})
-
-type SignInFormSchema = z.infer<typeof validationSchema>
-
 const SignInForm = (props: SignInFormProps) => {
     const [isSubmitting, setSubmitting] = useState<boolean>(false)
     const { disableSubmit = false, className, setMessage } = props
+    const { t } = useTranslation()
 
     const navigate = useNavigate()
     const { sendOTP } = useAuth()
+
+    const validationSchema = z.object({
+        dialCode: z
+            .string()
+            .min(1, { message: t('auth.validation.countryCodeRequired') }),
+        phoneNumber: z
+            .string()
+            .min(1, { message: t('auth.validation.phoneRequired') })
+            .regex(/^[0-9]+$/, {
+                message: t('auth.validation.phoneInvalid'),
+            }),
+    })
 
     const {
         handleSubmit,
         formState: { errors },
         control,
-    } = useForm<SignInFormSchema>({
+    } = useForm({
         defaultValues: {
             dialCode: '+1',
             phoneNumber: '',
@@ -46,7 +48,7 @@ const SignInForm = (props: SignInFormProps) => {
         resolver: zodResolver(validationSchema),
     })
 
-    const onSubmit = async (data: SignInFormSchema) => {
+    const onSubmit = async (data: any) => {
         if (disableSubmit) return
 
         setSubmitting(true)
@@ -54,11 +56,15 @@ const SignInForm = (props: SignInFormProps) => {
         try {
             const fullPhoneNumber = data.dialCode + data.phoneNumber
             console.log('SignIn: Sending OTP for:', fullPhoneNumber)
-            const result = await sendOTP({ phoneNumber: fullPhoneNumber })
+            const result = await sendOTP({
+                identifier: fullPhoneNumber,
+                identifierType: 'phone',
+                tag: 'login',
+            })
 
             if (result?.status === 'success') {
                 console.log('SignIn: OTP sent successfully')
-                setMessage('OTP sent successfully')
+                setMessage(t('auth.signIn.otpSent'))
                 navigate('/verify-otp', {
                     state: {
                         phoneNumber: fullPhoneNumber,
@@ -67,11 +73,11 @@ const SignInForm = (props: SignInFormProps) => {
                 })
             } else {
                 console.error('SignIn: Failed to send OTP:', result)
-                setMessage(result?.message || 'Failed to send OTP', true)
+                setMessage(result?.message || t('auth.signIn.otpError'), true)
             }
         } catch (error) {
             console.error('SignIn: Unexpected error:', error)
-            setMessage('An unexpected error occurred', true)
+            setMessage(t('auth.signIn.unexpectedError'), true)
         } finally {
             setSubmitting(false)
         }
@@ -83,7 +89,7 @@ const SignInForm = (props: SignInFormProps) => {
                 <PhoneInput
                     control={control}
                     errors={errors}
-                    placeholder="Enter your phone number"
+                    placeholder={t('auth.signIn.phonePlaceholder')}
                 />
                 <Button
                     block
@@ -92,7 +98,7 @@ const SignInForm = (props: SignInFormProps) => {
                     type="submit"
                     disabled={disableSubmit || isSubmitting}
                 >
-                    Continue
+                    {t('auth.signIn.continue')}
                 </Button>
             </Form>
         </div>

@@ -1,9 +1,12 @@
 export interface SignInCredential {
-    phoneNumber: string
+    identifier: string
+    identifierType?: 'phone' | 'email'
+    tag: 'signup' | 'login' | 'update_phone' | 'update_email'
 }
 
 export interface VerifyOTPCredential {
-    phoneNumber: string
+    identifier: string
+    identifierType?: 'phone' | 'email'
     otp: string
 }
 
@@ -24,7 +27,9 @@ export interface SendOTPResponse {
     success: boolean
     message: string
     data: {
-        phoneNumber: string
+        identifier: string
+        identifierType: 'phone' | 'email'
+        tag: string
     }
 }
 

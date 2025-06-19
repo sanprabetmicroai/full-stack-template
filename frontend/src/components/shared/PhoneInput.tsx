@@ -15,20 +15,13 @@ type CountryOption = {
     value: string
 }
 
-type PhoneFormData = {
-    dialCode: string
-    phoneNumber: string
-}
-
 type PhoneInputProps = {
-    control: Control<PhoneFormData>
-    errors: FieldErrors<PhoneFormData>
+    control: Control<any>
+    errors: FieldErrors<any>
     placeholder?: string
 }
 
-const CustomControl = (
-    props: ControlProps<CountryOption, false, GroupBase<CountryOption>>,
-) => {
+const CustomControl = (props: any) => {
     const selected = props.getValue()[0]
     const { children, ...rest } = props
     return (
@@ -46,13 +39,11 @@ const CustomControl = (
     )
 }
 
-const CustomSelectOption = (
-    props: OptionProps<CountryOption> & { variant: 'country' | 'phone' },
-) => {
+const CustomSelectOption = (props: any) => {
     return (
-        <DefaultOption<CountryOption>
+        <DefaultOption
             {...props}
-            customLabel={(data, label) => (
+            customLabel={(data: any, label: any) => (
                 <span className="flex items-center gap-2">
                     <Avatar
                         shape="circle"
@@ -85,20 +76,19 @@ const PhoneInput = ({ control, errors, placeholder }: PhoneInputProps) => {
                 invalid={Boolean(errors.dialCode)}
                 errorMessage={errors.dialCode?.message?.toString()}
             >
-                <label className="form-label mb-2">Phone number</label>
                 <Controller
                     name="dialCode"
                     control={control}
                     render={({ field }) => (
-                        <Select<CountryOption>
+                        <Select
                             options={dialCodeList}
                             {...field}
                             className="w-[150px]"
                             components={{
-                                Option: (props) => (
+                                Option: (props: any) => (
                                     <CustomSelectOption
                                         variant="phone"
-                                        {...(props as OptionProps<CountryOption>)}
+                                        {...props}
                                     />
                                 ),
                                 Control: CustomControl,
@@ -107,7 +97,7 @@ const PhoneInput = ({ control, errors, placeholder }: PhoneInputProps) => {
                             value={dialCodeList.filter(
                                 (option) => option.dialCode === field.value,
                             )}
-                            onChange={(option) =>
+                            onChange={(option: any) =>
                                 field.onChange(option?.dialCode)
                             }
                         />

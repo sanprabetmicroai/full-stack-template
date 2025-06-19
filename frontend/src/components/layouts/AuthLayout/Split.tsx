@@ -1,6 +1,6 @@
-import { cloneElement } from 'react'
-import type { ReactNode } from 'react'
+import { cloneElement, ReactElement, ReactNode } from 'react'
 import type { CommonProps } from '@/@types/common'
+import LanguageSelector from '@/components/template/LanguageSelector'
 
 interface SplitProps extends CommonProps {
     content?: ReactNode
@@ -8,7 +8,10 @@ interface SplitProps extends CommonProps {
 
 const Split = ({ children, content, ...rest }: SplitProps) => {
     return (
-        <div className="grid lg:grid-cols-2 h-full p-6 bg-white dark:bg-gray-800">
+        <div className="grid lg:grid-cols-2 h-full p-6 bg-white dark:bg-gray-800 relative">
+            <div className="absolute top-4 right-4 z-10">
+                <LanguageSelector />
+            </div>
             <div className="bg-no-repeat bg-cover py-6 px-16 flex-col justify-center items-center hidden lg:flex bg-primary rounded-3xl">
                 <div className="flex flex-col items-center gap-12">
                     <div className="w-full max-w-[450px] 2xl:max-w-[900px] h-[300px] bg-gray-200 dark:bg-gray-700 rounded-md" />
@@ -28,7 +31,7 @@ const Split = ({ children, content, ...rest }: SplitProps) => {
                 <div className="w-full xl:max-w-[450px] px-8 max-w-[380px]">
                     <div className="mb-8">{content}</div>
                     {children
-                        ? cloneElement(children as React.ReactElement, {
+                        ? cloneElement(children as ReactElement, {
                               ...rest,
                           })
                         : null}

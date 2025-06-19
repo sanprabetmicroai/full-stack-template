@@ -12,6 +12,7 @@ import {
 } from '@/services/UserService'
 import { toast } from 'react-toastify'
 import type { User } from '@/@types/auth'
+import UpdateContactModal from '@/components/shared/UpdateContactModal'
 
 const MAX_FILE_SIZE_MB = 2
 const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024
@@ -22,8 +23,8 @@ const Profile = () => {
     const queryClient = useQueryClient()
     const [isEditing, setIsEditing] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
-    const [isEditingEmail, setIsEditingEmail] = useState(false)
-    const [isEditingPhone, setIsEditingPhone] = useState(false)
+    const [showEmailModal, setShowEmailModal] = useState(false)
+    const [showPhoneModal, setShowPhoneModal] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
@@ -127,28 +128,6 @@ const Profile = () => {
             setIsEditing(false)
         } catch (error) {
             console.error('Error updating profile:', error)
-        }
-    }
-
-    const handleEmailUpdate = async (e: React.FormEvent) => {
-        e.preventDefault()
-        try {
-            await updateUserMutation.mutateAsync({ email: formData.email })
-            setIsEditingEmail(false)
-        } catch (error) {
-            console.error('Error updating email:', error)
-        }
-    }
-
-    const handlePhoneUpdate = async (e: React.FormEvent) => {
-        e.preventDefault()
-        try {
-            await updateUserMutation.mutateAsync({
-                phoneNumber: formData.phoneNumber,
-            })
-            setIsEditingPhone(false)
-        } catch (error) {
-            console.error('Error updating phone:', error)
         }
     }
 
@@ -305,61 +284,27 @@ const Profile = () => {
                                 <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
                                     {t('profile.emailSettings')}
                                 </h3>
-                                {isEditingEmail ? (
-                                    <Form onSubmit={handleEmailUpdate}>
-                                        <FormItem label={t('profile.email')}>
-                                            <Input
-                                                type="email"
-                                                value={formData.email}
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        email: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </FormItem>
-                                        <div className="flex justify-end gap-2 mt-4">
-                                            <Button
-                                                variant="plain"
-                                                onClick={() =>
-                                                    setIsEditingEmail(false)
-                                                }
-                                            >
-                                                {t('common.cancel')}
-                                            </Button>
-                                            <Button
-                                                variant="solid"
-                                                type="submit"
-                                                className=""
-                                            >
-                                                {t('common.update')}
-                                            </Button>
+                                <div className="w-full">
+                                    <div className="mb-4">
+                                        <div className="font-semibold text-gray-700 dark:text-gray-200 mb-1">
+                                            {t('profile.email')}
                                         </div>
-                                    </Form>
-                                ) : (
-                                    <div className="w-full">
-                                        <div className="mb-4">
-                                            <div className="font-semibold text-gray-700 dark:text-gray-200 mb-1">
-                                                {t('profile.email')}
-                                            </div>
-                                            <div className="bg-gray-50 dark:bg-gray-800 rounded px-4 py-2 text-gray-600 dark:text-gray-300">
-                                                {formData.email}
-                                            </div>
-                                        </div>
-                                        <div className="flex justify-end">
-                                            <Button
-                                                variant="solid"
-                                                onClick={() =>
-                                                    setIsEditingEmail(true)
-                                                }
-                                                className=""
-                                            >
-                                                {t('common.updateEmail')}
-                                            </Button>
+                                        <div className="bg-gray-50 dark:bg-gray-800 rounded px-4 py-2 text-gray-600 dark:text-gray-300">
+                                            {formData.email}
                                         </div>
                                     </div>
-                                )}
+                                    <div className="flex justify-end">
+                                        <Button
+                                            variant="solid"
+                                            onClick={() =>
+                                                setShowEmailModal(true)
+                                            }
+                                            className=""
+                                        >
+                                            {t('common.updateEmail')}
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Phone Update Section */}
@@ -367,63 +312,28 @@ const Profile = () => {
                                 <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
                                     {t('profile.phoneSettings')}
                                 </h3>
-                                {isEditingPhone ? (
-                                    <Form onSubmit={handlePhoneUpdate}>
-                                        <FormItem label={t('profile.phone')}>
-                                            <Input
-                                                type="tel"
-                                                value={formData.phoneNumber}
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        phoneNumber:
-                                                            e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </FormItem>
-                                        <div className="flex justify-end gap-2 mt-4">
-                                            <Button
-                                                variant="plain"
-                                                onClick={() =>
-                                                    setIsEditingPhone(false)
-                                                }
-                                            >
-                                                {t('common.cancel')}
-                                            </Button>
-                                            <Button
-                                                variant="solid"
-                                                type="submit"
-                                                className=""
-                                            >
-                                                {t('common.update')}
-                                            </Button>
+                                <div className="w-full">
+                                    <div className="mb-4">
+                                        <div className="font-semibold text-gray-700 dark:text-gray-200 mb-1">
+                                            {t('profile.phone')}
                                         </div>
-                                    </Form>
-                                ) : (
-                                    <div className="w-full">
-                                        <div className="mb-4">
-                                            <div className="font-semibold text-gray-700 dark:text-gray-200 mb-1">
-                                                {t('profile.phone')}
-                                            </div>
-                                            <div className="bg-gray-50 dark:bg-gray-800 rounded px-4 py-2 text-gray-600 dark:text-gray-300">
-                                                {formData.phoneNumber ||
-                                                    t('profile.noPhone')}
-                                            </div>
-                                        </div>
-                                        <div className="flex justify-end">
-                                            <Button
-                                                variant="solid"
-                                                onClick={() =>
-                                                    setIsEditingPhone(true)
-                                                }
-                                                className=""
-                                            >
-                                                {t('common.updatePhone')}
-                                            </Button>
+                                        <div className="bg-gray-50 dark:bg-gray-800 rounded px-4 py-2 text-gray-600 dark:text-gray-300">
+                                            {formData.phoneNumber ||
+                                                t('profile.noPhone')}
                                         </div>
                                     </div>
-                                )}
+                                    <div className="flex justify-end">
+                                        <Button
+                                            variant="solid"
+                                            onClick={() =>
+                                                setShowPhoneModal(true)
+                                            }
+                                            className=""
+                                        >
+                                            {t('common.updatePhone')}
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -509,6 +419,22 @@ const Profile = () => {
                     </>
                 )}
             </Card>
+
+            {/* Contact Update Modals */}
+            <UpdateContactModal
+                isOpen={showEmailModal}
+                onClose={() => setShowEmailModal(false)}
+                type="email"
+                currentValue={formData.email}
+                userId={user?.id || ''}
+            />
+            <UpdateContactModal
+                isOpen={showPhoneModal}
+                onClose={() => setShowPhoneModal(false)}
+                type="phone"
+                currentValue={formData.phoneNumber}
+                userId={user?.id || ''}
+            />
         </div>
     )
 }

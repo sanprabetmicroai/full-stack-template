@@ -107,7 +107,7 @@ function AuthProvider({ children }: AuthProviderProps) {
         setUser({
             id: '',
             phoneNumber: '',
-            createdAt: '',
+            createdAt: { _seconds: 0, _nanoseconds: 0 },
         })
         setSessionSignedIn(false)
     }
@@ -115,7 +115,7 @@ function AuthProvider({ children }: AuthProviderProps) {
     // Send OTP (for both sign-in and sign-up)
     const sendOTP = async (values: SignInCredential): Promise<AuthResult> => {
         try {
-            console.log('AuthProvider: Sending OTP to:', values.phoneNumber)
+            console.log('AuthProvider: Sending OTP to:', values.identifier)
             const resp = await apiSendOTP(values)
             console.log('AuthProvider: Send OTP response:', resp)
 
@@ -153,7 +153,7 @@ function AuthProvider({ children }: AuthProviderProps) {
         try {
             console.log(
                 'AuthProvider: Verifying sign-in OTP for:',
-                values.phoneNumber,
+                values.identifier,
             )
             const resp = await apiVerifySignIn(values)
             console.log('AuthProvider: Verify sign-in response:', resp)
@@ -189,14 +189,15 @@ function AuthProvider({ children }: AuthProviderProps) {
 
     // Verify OTP for new users (sign-up)
     const verifySignUp = async (values: {
-        phoneNumber: string
+        identifier: string
+        identifierType?: 'phone' | 'email'
         otp: string
         userData: SignUpCredential
     }): Promise<AuthResult> => {
         try {
             console.log(
                 'AuthProvider: Verifying sign-up OTP for:',
-                values.phoneNumber,
+                values.identifier,
             )
             const resp = await apiVerifySignUp(values)
             console.log('AuthProvider: Verify sign-up response:', resp)
@@ -230,9 +231,9 @@ function AuthProvider({ children }: AuthProviderProps) {
         }
     }
 
-    const signOut = async () => {
+    const signOut = async (feedback?: { rating: number; feedback: string }) => {
         try {
-            await apiSignOut()
+            await apiSignOut(feedback)
         } finally {
             handleSignOut()
             navigatorRef.current?.navigate('/')

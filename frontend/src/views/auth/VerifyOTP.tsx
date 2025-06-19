@@ -13,16 +13,7 @@ import Logo from '@/components/template/Logo'
 import { toast } from '@/components/ui/toast'
 import { Notification } from '@/components/ui/Notification'
 import type { SignUpCredential } from '@/@types/auth'
-
-const validationSchema = z.object({
-    otp: z
-        .string()
-        .min(6, { message: 'OTP must be 6 digits' })
-        .max(6, { message: 'OTP must be 6 digits' })
-        .regex(/^\d{6}$/, { message: 'OTP must be 6 digits' }),
-})
-
-type OTPFormSchema = z.infer<typeof validationSchema>
+import { useTranslation } from 'react-i18next'
 
 interface LocationState {
     phoneNumber: string
@@ -35,6 +26,7 @@ const VerifyOTP = () => {
     const [error, setError] = useState<string>('')
     const [resendTimer, setResendTimer] = useState<number>(60)
     const [canResend, setCanResend] = useState<boolean>(false)
+    const { t } = useTranslation()
 
     const { verifySignIn, verifySignUp, sendOTP } = useAuth()
     const navigate = useNavigate()
@@ -61,19 +53,27 @@ const VerifyOTP = () => {
         }
     }, [resendTimer])
 
+    const validationSchema = z.object({
+        otp: z
+            .string()
+            .min(6, { message: t('auth.validation.otpRequired') })
+            .max(6, { message: t('auth.validation.otpRequired') })
+            .regex(/^\d{6}$/, { message: t('auth.validation.otpInvalid') }),
+    })
+
     const {
         handleSubmit,
         formState: { errors },
         control,
         reset,
-    } = useForm<OTPFormSchema>({
+    } = useForm({
         defaultValues: {
             otp: '',
         },
         resolver: zodResolver(validationSchema),
     })
 
-    const onSubmit = async (data: OTPFormSchema) => {
+    const onSubmit = async (data: any) => {
         if (!state?.phoneNumber) return
 
         setSubmitting(true)
@@ -85,14 +85,16 @@ const VerifyOTP = () => {
             if (state.isSignUp && state.userData) {
                 // Sign-up flow
                 result = await verifySignUp({
-                    phoneNumber: state.phoneNumber,
+                    identifier: state.phoneNumber,
+                    identifierType: 'phone',
                     otp: data.otp,
                     userData: state.userData,
                 })
             } else {
                 // Sign-in flow
                 result = await verifySignIn({
-                    phoneNumber: state.phoneNumber,
+                    identifier: state.phoneNumber,
+                    identifierType: 'phone',
                     otp: data.otp,
                 })
             }
@@ -109,7 +111,7 @@ const VerifyOTP = () => {
             }
         } catch (error) {
             console.error('OTP verification error:', error)
-            setError('An unexpected error occurred')
+            setError(t('auth.signIn.unexpectedError'))
         } finally {
             setSubmitting(false)
         }
@@ -119,12 +121,16 @@ const VerifyOTP = () => {
         if (!canResend || !state?.phoneNumber) return
 
         try {
-            const result = await sendOTP({ phoneNumber: state.phoneNumber })
+            const result = await sendOTP({
+                identifier: state.phoneNumber,
+                identifierType: 'phone',
+                tag: state.isSignUp ? 'signup' : 'login',
+            })
 
             if (result.status === 'success') {
                 toast.push(
                     <Notification title="Success" type="success">
-                        Verification code sent successfully
+                        {t('auth.verifyOTP.verificationSent')}
                     </Notification>,
                 )
                 setResendTimer(60)
@@ -141,7 +147,7 @@ const VerifyOTP = () => {
             console.error('Resend OTP error:', error)
             toast.push(
                 <Notification title="Error" type="danger">
-                    Failed to resend verification code
+                    {t('auth.verifyOTP.resendError')}
                 </Notification>,
             )
         }
@@ -152,10 +158,11 @@ const VerifyOTP = () => {
             <div className="mb-8">
                 <Logo type="streamline" imgClass="mx-auto" logoWidth={60} />
                 <div className="mb-10">
-                    <h2 className="mb-2">Invalid Access</h2>
+                    <h2 className="mb-2">
+                        {t('auth.verifyOTP.invalidAccess')}
+                    </h2>
                     <p className="font-semibold heading-text">
-                        Please start the authentication process from the
-                        beginning.
+                        {t('auth.verifyOTP.invalidAccessMessage')}
                     </p>
                 </div>
                 <Button
@@ -163,7 +170,7 @@ const VerifyOTP = () => {
                     onClick={() => navigate('/sign-in')}
                     className="w-full"
                 >
-                    Go to Sign In
+                    {t('auth.verifyOTP.goToSignIn')}
                 </Button>
             </div>
         )
@@ -175,9 +182,9 @@ const VerifyOTP = () => {
                 <Logo type="streamline" imgClass="mx-auto" logoWidth={60} />
             </div>
             <div className="mb-10">
-                <h2 className="mb-2">Verify Phone Number</h2>
+                <h2 className="mb-2">{t('auth.verifyOTP.title')}</h2>
                 <p className="font-semibold heading-text">
-                    We've sent a 6-digit verification code to
+                    {t('auth.verifyOTP.subtitle')}
                 </p>
                 <p className="text-primary-500 font-bold">
                     {state.phoneNumber}
@@ -192,7 +199,7 @@ const VerifyOTP = () => {
 
             <Form onSubmit={handleSubmit(onSubmit)}>
                 <FormItem
-                    label="Verification Code"
+                    label=""
                     invalid={Boolean(errors.otp)}
                     errorMessage={errors.otp?.message}
                 >
@@ -202,11 +209,8 @@ const VerifyOTP = () => {
                         render={({ field }) => (
                             <Input
                                 type="text"
-                                placeholder="Enter 6-digit code"
-                                autoComplete="one-time-code"
-                                inputMode="numeric"
+                                placeholder={t('auth.verifyOTP.otpPlaceholder')}
                                 maxLength={6}
-                                className="text-center text-2xl tracking-widest"
                                 {...field}
                             />
                         )}
@@ -220,34 +224,24 @@ const VerifyOTP = () => {
                     type="submit"
                     disabled={isSubmitting}
                 >
-                    Verify Code
+                    {t('auth.verifyOTP.verify')}
                 </Button>
             </Form>
 
-            <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600 mb-2">
-                    Didn't receive the code?
-                </p>
-                <Button
-                    variant="plain"
-                    size="sm"
-                    onClick={handleResendOTP}
-                    disabled={!canResend}
-                    className="text-primary-500"
-                >
-                    {canResend ? 'Resend Code' : `Resend in ${resendTimer}s`}
-                </Button>
-            </div>
-
             <div className="mt-4 text-center">
-                <Button
-                    variant="plain"
-                    size="sm"
-                    onClick={() => navigate(-1)}
-                    className="text-gray-500"
-                >
-                    ← Back
-                </Button>
+                {canResend ? (
+                    <Button
+                        variant="plain"
+                        onClick={handleResendOTP}
+                        className="text-primary-500"
+                    >
+                        {t('auth.verifyOTP.resend')}
+                    </Button>
+                ) : (
+                    <p className="text-gray-500">
+                        {t('auth.verifyOTP.resendIn', { seconds: resendTimer })}
+                    </p>
+                )}
             </div>
         </>
     )

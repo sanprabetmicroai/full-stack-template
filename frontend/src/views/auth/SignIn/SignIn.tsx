@@ -5,6 +5,7 @@ import useTimeOutMessage from '@/utils/hooks/useTimeOutMessage'
 import { Link } from 'react-router-dom'
 import { toast } from '@/components/ui/toast'
 import { Notification } from '@/components/ui/Notification'
+import { useTranslation } from 'react-i18next'
 
 type SignInProps = {
     disableSubmit?: boolean
@@ -12,6 +13,7 @@ type SignInProps = {
 
 export const SignInBase = ({ disableSubmit }: SignInProps) => {
     const [message, setMessage] = useTimeOutMessage()
+    const { t } = useTranslation()
 
     const handleMessage = (message: string, isError: boolean = false) => {
         if (isError) {
@@ -31,9 +33,9 @@ export const SignInBase = ({ disableSubmit }: SignInProps) => {
                 <Logo type="streamline" imgClass="mx-auto" logoWidth={60} />
             </div>
             <div className="mb-10">
-                <h2 className="mb-2">Welcome!</h2>
+                <h2 className="mb-2">{t('auth.signIn.title')}</h2>
                 <p className="font-semibold heading-text">
-                    Please enter your phone number to sign in!
+                    {t('auth.signIn.subtitle')}
                 </p>
             </div>
             {message && (
@@ -46,9 +48,9 @@ export const SignInBase = ({ disableSubmit }: SignInProps) => {
                 setMessage={handleMessage}
             />
             <div className="mt-4 text-center">
-                <span>Don't have an account? </span>
+                <span>{t('auth.signIn.noAccount')} </span>
                 <Link to="/sign-up" className="text-primary-500">
-                    Sign Up
+                    {t('auth.signIn.signUp')}
                 </Link>
             </div>
         </>
