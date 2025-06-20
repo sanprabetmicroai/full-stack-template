@@ -13,9 +13,6 @@ const {
 } = require('../controllers/authController');
 const { authenticateToken } = require('../middleware/authMiddleware');
 
-// Test database connection route
-router.get('/test-db', testDatabaseConnection);
-
 // Test email OTP route
 router.post('/test-email-otp', testEmailOTP);
 

@@ -74,6 +74,8 @@ export interface User {
     firstName?: string
     lastName?: string
     email?: string
+    email_verified?: boolean // Only set to true when email is verified through OTP update
+    phone_verified?: boolean // Only set to true when phone is verified through OTP update
     createdAt: Timestamp
     dateOfBirth?: string
     timeOfBirth?: string

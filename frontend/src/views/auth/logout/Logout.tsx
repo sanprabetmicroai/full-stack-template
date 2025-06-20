@@ -20,6 +20,7 @@ const Logout = () => {
     const navigate = useNavigate()
     const { signOut } = useAuth()
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState('')
     const [formData, setFormData] = useState<FeedbackFormData>({
         rating: 0,
         comments: '',
@@ -35,11 +36,28 @@ const Logout = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+
+        // Validate rating
+        if (formData.rating === 0) {
+            setError(t('signOut.ratingRequired'))
+            return
+        }
+
+        // Validate comments
+        if (formData.comments.length < 8) {
+            setError(t('signOut.feedbackMinLength'))
+            return
+        }
+
         setLoading(true)
+        setError('')
         try {
             // TODO: Implement feedback submission to your backend
             await new Promise((resolve) => setTimeout(resolve, 1000)) // Simulated API call
-            await signOut()
+            await signOut({
+                rating: formData.rating,
+                feedback: formData.comments,
+            })
             navigate('/login')
         } catch {
             // Show error message
@@ -56,6 +74,7 @@ const Logout = () => {
             ...prev,
             [field]: value,
         }))
+        setError('') // Clear error when user makes changes
     }
 
     return (
@@ -69,13 +88,13 @@ const Logout = () => {
 
                         <Form onSubmit={handleSubmit}>
                             <FormItem label={t('logout.feedback.rating')}>
-                                <Select<RatingOption>
+                                <Select
                                     required
                                     options={ratingOptions}
                                     value={ratingOptions.find(
                                         (opt) => opt.value === formData.rating,
                                     )}
-                                    onChange={(option) =>
+                                    onChange={(option: any) =>
                                         handleChange(
                                             'rating',
                                             option?.value ?? 0,
@@ -96,6 +115,14 @@ const Logout = () => {
                                     }
                                 />
                             </FormItem>
+
+                            {error && (
+                                <div className="mb-4">
+                                    <p className="text-red-500 text-sm">
+                                        {error}
+                                    </p>
+                                </div>
+                            )}
 
                             <div className="flex justify-end gap-4 mt-6">
                                 <Button

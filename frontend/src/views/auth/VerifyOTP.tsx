@@ -155,8 +155,10 @@ const VerifyOTP = () => {
 
     if (!state?.phoneNumber) {
         return (
-            <div className="mb-8">
-                <Logo type="streamline" imgClass="mx-auto" logoWidth={60} />
+            <>
+                <div className="mb-8">
+                    <Logo type="streamline" imgClass="mx-auto" logoWidth={60} />
+                </div>
                 <div className="mb-10">
                     <h2 className="mb-2">
                         {t('auth.verifyOTP.invalidAccess')}
@@ -172,7 +174,7 @@ const VerifyOTP = () => {
                 >
                     {t('auth.verifyOTP.goToSignIn')}
                 </Button>
-            </div>
+            </>
         )
     }
 

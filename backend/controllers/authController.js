@@ -674,8 +674,7 @@ const verifyOTPSignUp = async (req, res) => {
             lastName,
             email: email || null,
             phoneNumber: phoneNumber || null,
-            email_verified: email ? (identifierType === 'email' ? true : false) : false,
-            phone_verified: phoneNumber ? (identifierType === 'phone' ? true : false) : false,
+            // Don't set verification fields during signup - only set them when user updates via OTP
             createdAt: timestamp,
             updatedAt: timestamp,
             lastSignIn: timestamp,
@@ -1032,73 +1031,6 @@ const checkResendStatus = async (req, res) => {
     }
 };
 
-// Test function to check database connection and list users
-const testDatabaseConnection = async (req, res) => {
-    try {
-        console.log('Testing database connection...');
-        const usersRef = db.collection('users');
-        const allUsers = await usersRef.get();
-        
-        console.log('Database connection test result:', {
-            empty: allUsers.empty,
-            size: allUsers.size,
-            users: allUsers.docs.map(doc => ({
-                id: doc.id,
-                phoneNumber: doc.data().phoneNumber,
-                email: doc.data().email,
-                firstName: doc.data().firstName,
-                lastName: doc.data().lastName
-            }))
-        });
-        
-        // Test specific phone number query
-        const testPhone = '+573115203360';
-        console.log('Testing specific phone number query for:', testPhone);
-        const specificUserQuery = await usersRef.where('phoneNumber', '==', testPhone).get();
-        console.log('Specific phone query result:', {
-            empty: specificUserQuery.empty,
-            size: specificUserQuery.size,
-            found: !specificUserQuery.empty,
-            docs: specificUserQuery.docs.map(doc => ({
-                id: doc.id,
-                phoneNumber: doc.data().phoneNumber,
-                email: doc.data().email,
-                firstName: doc.data().firstName,
-                lastName: doc.data().lastName
-            }))
-        });
-        
-        res.status(200).json({
-            success: true,
-            message: 'Database connection test completed',
-            data: {
-                totalUsers: allUsers.size,
-                users: allUsers.docs.map(doc => ({
-                    id: doc.id,
-                    phoneNumber: doc.data().phoneNumber,
-                    email: doc.data().email,
-                    firstName: doc.data().firstName,
-                    lastName: doc.data().lastName
-                })),
-                specificPhoneTest: {
-                    phoneNumber: testPhone,
-                    found: !specificUserQuery.empty,
-                    user: specificUserQuery.empty ? null : {
-                        id: specificUserQuery.docs[0].id,
-                        ...specificUserQuery.docs[0].data()
-                    }
-                }
-            }
-        });
-    } catch (error) {
-        console.error('Database connection test failed:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Database connection test failed',
-            error: error.message
-        });
-    }
-};
 
 module.exports = {
     sendOTP,
@@ -1108,6 +1040,5 @@ module.exports = {
     testEmailOTP,
     requestUpdateOTP,
     verifyUpdateOTP,
-    checkResendStatus,
-    testDatabaseConnection
+    checkResendStatus
 };

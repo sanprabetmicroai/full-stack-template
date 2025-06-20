@@ -18,6 +18,10 @@ const SignOutModal = ({ isOpen, onClose, onConfirm }: SignOutModalProps) => {
     const [error, setError] = useState('')
 
     const handleConfirm = () => {
+        if (rating === 0) {
+            setError(t('signOut.ratingRequired'))
+            return
+        }
         if (feedback.length < 8) {
             setError(t('signOut.feedbackMinLength'))
             return
@@ -35,7 +39,10 @@ const SignOutModal = ({ isOpen, onClose, onConfirm }: SignOutModalProps) => {
                         {[1, 2, 3, 4, 5].map((star) => (
                             <button
                                 key={star}
-                                onClick={() => setRating(star)}
+                                onClick={() => {
+                                    setRating(star)
+                                    setError('')
+                                }}
                                 className={`text-2xl ${
                                     star <= rating
                                         ? 'text-yellow-400'

@@ -135,7 +135,9 @@
         "otpVerificationError": "Failed to verify OTP",
         "otpSentTo": "OTP sent to your {{type}}: {{value}}",
         "verifyAndUpdate": "Verify & Update",
-        "noValue": "Not set"
+        "noValue": "Not set",
+        "verified": "Verified",
+        "notVerified": "Not Verified"
     },
     "settings": {
         "title": "Settings",
@@ -194,6 +196,16 @@
         "rating": "How would you rate your experience?",
         "feedback": "Additional feedback",
         "feedbackPlaceholder": "Let us know how we can improve",
-        "feedbackMinLength": "Feedback must be at least 8 characters long."
+        "feedbackMinLength": "Feedback must be at least 8 characters long.",
+        "ratingRequired": "Please select a rating before submitting feedback."
+    },
+    "logout": {
+        "title": "Logout Feedback",
+        "feedback": {
+            "rating": "How would you rate your experience?",
+            "comments": "Additional comments",
+            "commentsPlaceholder": "Let us know how we can improve"
+        },
+        "confirm": "Logout"
     }
 }

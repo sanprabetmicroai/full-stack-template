@@ -129,7 +129,9 @@
         "otpVerificationError": "Erro ao verificar OTP",
         "otpSentTo": "OTP enviado para seu {{type}}: {{value}}",
         "verifyAndUpdate": "Verificar e Atualizar",
-        "noValue": "Não definido"
+        "noValue": "Não definido",
+        "verified": "Verificado",
+        "notVerified": "Não Verificado"
     },
     "settings": {
         "title": "Configurações",
@@ -187,6 +189,16 @@
         "rating": "Como você avaliaria sua experiência?",
         "feedback": "Feedback adicional",
         "feedbackPlaceholder": "Conte-nos como podemos melhorar",
-        "feedbackMinLength": "O feedback deve ter pelo menos 8 caracteres."
+        "feedbackMinLength": "O feedback deve ter pelo menos 8 caracteres.",
+        "ratingRequired": "Por favor selecione uma avaliação antes de enviar o feedback."
+    },
+    "logout": {
+        "title": "Feedback de saída",
+        "feedback": {
+            "rating": "Como você avaliaria sua experiência?",
+            "comments": "Comentários adicionais",
+            "commentsPlaceholder": "Conte-nos como podemos melhorar"
+        },
+        "confirm": "Sair"
     }
 }
